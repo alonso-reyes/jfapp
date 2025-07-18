@@ -15,7 +15,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       emit(LoginLoading());
       final Map<String, String> params;
       final response = await login(event.username, event.password);
-      //dev.log('Respuesta del login: $response');
+      dev.log('Respuesta del login: $response');
       //return;
       if (response != null && response is UserModel) {
         PreferenceProvider.user = jsonEncode(response.user);

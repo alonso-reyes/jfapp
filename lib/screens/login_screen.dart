@@ -53,53 +53,56 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Scaffold(
         backgroundColor: mainBgColor,
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 50),
-                Image.asset(
-                  'assets/images/logo_rod.png',
-                  height: 300,
-                  width: 1500,
-                ),
-                SizedBox(height: 10),
-                CustomTextField(
-                  controller: usernameController,
-                  hintText: 'Usuario',
-                  obscureText: false,
-                ),
-                SizedBox(height: 16),
-                CustomTextField(
-                  controller: passwordController,
-                  hintText: 'Contraseña',
-                  obscureText: true,
-                ),
-                SizedBox(height: 32),
-                CustomButton(
-                  text: 'Iniciar sesion',
-                  onTap: () {
-                    final username = usernameController.text.trim();
-                    final password = passwordController.text.trim();
-
-                    if (username.isNotEmpty && password.isNotEmpty) {
-                      context.read<LoginBloc>().add(
-                            LoginSubmitted(
-                              username: username,
-                              password: password,
-                            ),
-                          );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Por favor, complete todos los campos'),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
+          child: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 50),
+                  Image.asset(
+                    'assets/images/logo_rod.png',
+                    height: 300,
+                    width: 1500,
+                  ),
+                  SizedBox(height: 10),
+                  CustomTextField(
+                    controller: usernameController,
+                    hintText: 'Usuario',
+                    obscureText: false,
+                  ),
+                  SizedBox(height: 16),
+                  CustomTextField(
+                    controller: passwordController,
+                    hintText: 'Contraseña',
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 32),
+                  CustomButton(
+                    text: 'Iniciar sesion',
+                    onTap: () {
+                      final username = usernameController.text.trim();
+                      final password = passwordController.text.trim();
+                      if (username.isNotEmpty && password.isNotEmpty) {
+                        context.read<LoginBloc>().add(
+                              LoginSubmitted(
+                                username: username,
+                                password: password,
+                              ),
+                            );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                                Text('Por favor, complete todos los campos'),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

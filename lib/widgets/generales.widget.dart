@@ -452,9 +452,13 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
           children: [
             Row(
               children: [
-                Text(
-                  'Obra: ${catalogoGenerales!.catalogoGenerales.obra.nombre} (${catalogoGenerales!.catalogoGenerales.obra.clave})',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Obra: ${catalogoGenerales!.catalogoGenerales.obra.nombre} (${catalogoGenerales!.catalogoGenerales.obra.clave})',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis, // o TextOverflow.fade
+                    maxLines: 5,
+                  ),
                 ),
               ],
             ),
@@ -463,9 +467,13 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Ubicación: ${catalogoGenerales!.catalogoGenerales.obra.ubicacion}',
-                  style: TextStyle(fontSize: 14),
+                Expanded(
+                  child: Text(
+                    'Ubicación: ${catalogoGenerales!.catalogoGenerales.obra.ubicacion}',
+                    style: TextStyle(fontSize: 14),
+                    overflow: TextOverflow.ellipsis, // o TextOverflow.fade
+                    maxLines: 5,
+                  ),
                 ),
                 Text(
                   'Fecha: $fechaActual',
