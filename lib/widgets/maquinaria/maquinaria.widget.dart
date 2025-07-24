@@ -48,14 +48,14 @@ class _MaquinariaWidgetState extends State<MaquinariaWidget> {
   void _cargarMaquinaria() {
     setState(() {
       maquinas = MaquinariaProvider.getMaquinaria('maquinaria');
-      print(maquinas);
+      //print(maquinas);
     });
   }
 
   void _agregarMaquina(GuardarCatalogoMaquinariaModel nuevaMaquinaria) {
     setState(() {
-      print('------------------------------');
-      print(nuevaMaquinaria);
+      // print('------------------------------');
+      // print(nuevaMaquinaria);
       MaquinariaProvider.addMaquinaria('maquinaria', nuevaMaquinaria);
       maquinas = MaquinariaProvider.getMaquinaria('maquinaria');
     });

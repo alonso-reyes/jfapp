@@ -46,3 +46,7 @@ app.*.map.json
 
 /storage/*
 !/storage/app/public
+
+.env
+
+/assets/.env

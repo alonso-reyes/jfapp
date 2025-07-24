@@ -65,27 +65,27 @@ class MyApp extends StatelessWidget {
     // Crear un usuario de prueba
     User testUser = User(
         id: 1,
-        tipoUsuario: '',
+        tipoUsuario: 'JEFE DE FRENTE',
         name: "Andres reyes",
         email: "johndoe@example.com",
         obraId: 1);
 
     // Crear un modelo de usuario de prueba
     UserModel testUserModel = UserModel(
-      token: "3|glqPeqGIbK0leMlouLDMAepawJlXAGYyUDiqQMb40706ea9c",
+      token: "8|knwCn5LNNtCu9WncgvQARKe72iEw5FD6YvX0MoyPd7288b03",
       token_type: "Bearer",
       success: true,
       messages: "User loaded successfully",
       user: testUser,
     );
 
-    // return MaterialApp(
-    //   title: 'JFAPP',
-    //   theme: ThemeData(
-    //     useMaterial3: true,
-    //   ),
-    //   home: JfMainScreen(user: testUserModel),
-    // );
+    return MaterialApp(
+      title: 'JFAPP',
+      theme: ThemeData(
+        useMaterial3: true,
+      ),
+      home: JfMainScreen(user: testUserModel),
+    );
 
     return MaterialApp(
       title: 'JFAPP',

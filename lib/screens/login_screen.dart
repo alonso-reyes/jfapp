@@ -7,6 +7,7 @@ import 'package:jfapp/components/custom_button.dart';
 import 'package:jfapp/components/custom_texfield.dart';
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/screens/jfMain_screen.dart';
+import 'package:jfapp/screens/siMain_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -39,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
               : Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => JfMainScreen(
+                      builder: (context) => SiMainScreen(
                             user: state.user,
                           )),
                   (route) => false,
