@@ -41,22 +41,16 @@ class Personal {
   int? id;
   String? nombre;
   String? puesto;
+  String? actividad;
 
-  Personal({
-    this.id,
-    this.nombre,
-    this.puesto,
-  });
+  Personal({this.id, this.nombre, this.puesto, this.actividad});
 
   factory Personal.fromJson(Map<String, dynamic> json) => Personal(
-        id: json["id"] ?? 0,
-        nombre: json["nombre"] ?? '',
-        puesto: json["puesto"] ?? '',
-      );
+      id: json["id"] ?? 0,
+      nombre: json["nombre"] ?? '',
+      puesto: json["puesto"] ?? '',
+      actividad: json["actividad"] ?? '');
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "nombre": nombre,
-        "puesto": puesto,
-      };
+  Map<String, dynamic> toJson() =>
+      {"id": id, "nombre": nombre, "puesto": puesto, "actividad": actividad};
 }

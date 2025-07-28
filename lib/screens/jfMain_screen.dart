@@ -6,6 +6,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_bloc.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_event.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_state.dart';
 import 'package:jfapp/blocs/concepto/concepto_bloc.dart';
 import 'package:jfapp/blocs/concepto/concepto_event.dart';
 import 'package:jfapp/blocs/concepto/concepto_state.dart';
@@ -28,6 +31,7 @@ import 'package:jfapp/helpers/turno-validation.helper.dart';
 import 'package:jfapp/helpers/zona-trabajo-validation.helper.dart';
 import 'package:jfapp/models/catalogo-generales.model.dart';
 import 'package:jfapp/models/catalogo-maquinaria.model.dart';
+import 'package:jfapp/models/catalogo-motivos-inactividad-maquinaria.model.dart';
 import 'package:jfapp/models/catalogo-personal.model.dart';
 import 'package:jfapp/models/concepto.model.dart';
 import 'package:jfapp/models/turno.model.dart';
@@ -38,6 +42,7 @@ import 'package:jfapp/providers/model_provider.dart';
 import 'package:jfapp/providers/personal_provider.dart';
 import 'package:jfapp/providers/photo_provider.dart';
 import 'package:jfapp/providers/preference_provider.dart';
+import 'package:jfapp/screens/jefe_frente_guardar/guardar_reporte_screen.dart';
 import 'package:jfapp/screens/login_screen.dart';
 import 'package:jfapp/widgets/acarreos-agua.widget.dart';
 import 'package:jfapp/widgets/acarreos-area.widget.dart';
@@ -67,8 +72,8 @@ class _JfMainScreenState extends State<JfMainScreen>
   bool _isLoading = true;
   late TabController _tabController;
   String? username;
-  final TextEditingController _observacionesController =
-      TextEditingController();
+  // final TextEditingController _observacionesController =
+  //     TextEditingController();
 
   // Catálogos
   CatalogoGeneralesModel? catalogoGenerales;
@@ -77,6 +82,7 @@ class _JfMainScreenState extends State<JfMainScreen>
   TurnoModel? catalogoTurnos;
   ZonasTrabajoModel? catalogoZonas;
   CatalogoPersonalModel? catalogoPersonal;
+  MotivosInactividadMaquinariaModel? catalogoMotivoInactividadMaquinaria;
 
   Future<bool> tieneConexionInternet() async {
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -86,14 +92,14 @@ class _JfMainScreenState extends State<JfMainScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _inicializarCatalogos();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _observacionesController.dispose();
+    // _observacionesController.dispose();
     super.dispose();
   }
 
@@ -144,6 +150,7 @@ class _JfMainScreenState extends State<JfMainScreen>
       await _cargarCatalogoGenerales();
       await _cargarCatalogoMaquinaria();
       await _cargarCatalogoPersonal();
+      await _cargarCatalogoMotivosInactividad();
 
       dev.log('Eventos de BLoCs enviados correctamente');
     } catch (e) {
@@ -162,6 +169,7 @@ class _JfMainScreenState extends State<JfMainScreen>
         ModelProvider.cargarCatalogoGenerales(),
         ModelProvider.cargarCatalogoMaquinaria(),
         ModelProvider.cargarCatalogoPersonal(),
+        ModelProvider.cargarCatalogoMotivosInactividad(),
       ]);
 
       dev.log('Resultados de preferencias obtenidos');
@@ -195,6 +203,15 @@ class _JfMainScreenState extends State<JfMainScreen>
           } else {
             dev.log('✗ Catálogo personal no encontrado en preferencias');
           }
+          if (results[4] != null) {
+            catalogoMotivoInactividadMaquinaria =
+                results[4] as MotivosInactividadMaquinariaModel;
+            dev.log(
+                '✓ Catálogo motivos de inactividad cargado desde preferencias');
+          } else {
+            dev.log(
+                '✗ Catálogo motivos de inactividad no encontrado en preferencias');
+          }
         });
       }
 
@@ -217,6 +234,22 @@ class _JfMainScreenState extends State<JfMainScreen>
         obraId: widget.user.user!.obraId!,
       ));
       dev.log('Evento ConceptoInStartRequest enviado');
+    } catch (e) {
+      dev.log('Error al cargar catálogo conceptos desde API: $e');
+    }
+  }
+
+  Future<void> _cargarCatalogoMotivosInactividad() async {
+    try {
+      dev.log('Enviando evento MotivosInactividadInStartRequest...');
+      final motivosInactividadBloc =
+          context.read<CatalogoMotivosInactvidadMaquinariaBloc>();
+      motivosInactividadBloc
+          .add(CatalogoMotivosInactvidadMaquinariaInStartRequest(
+        token: widget.user.token,
+        obraId: widget.user.user!.obraId!,
+      ));
+      dev.log('Evento MotivosInactividadInStartRequest enviado');
     } catch (e) {
       dev.log('Error al cargar catálogo conceptos desde API: $e');
     }
@@ -323,6 +356,8 @@ class _JfMainScreenState extends State<JfMainScreen>
       final personal = PersonalProvider.getPersonal('personal');
       final fotografias = PhotoProvider.getImagesWithDescriptions('images');
 
+      //print(personal);
+      //return;
       // Validaciones
       if (!CamposGeneralesValidationHelper.areCamposGeneralesComplete(
           campoGeneralesSeleccionado)) {
@@ -359,7 +394,7 @@ class _JfMainScreenState extends State<JfMainScreen>
         'generales': campoGeneralesSeleccionado!.toMap(),
         'turno': turnoSeleccionado!.toMap(),
         'zona_trabajo': zonaSeleccionada!.toMap(),
-        'observaciones': _observacionesController.text,
+        // 'observaciones': _observacionesController.text,
         'acarreos_volumen':
             acarreosVolumen.map((acarreo) => acarreo.toMap()).toList(),
         'acarreos_area':
@@ -508,6 +543,18 @@ class _JfMainScreenState extends State<JfMainScreen>
             dev.log('Error al cargar catálogo personal: ${state.toString()}');
           }
         }),
+        BlocListener<CatalogoMotivosInactvidadMaquinariaBloc,
+                CatalogoMotivosInactvidadMaquinariaState>(
+            listener: (context, state) {
+          if (state is CatalogoMotivosInactvidadMaquinariaSuccess) {
+            setState(() {
+              catalogoMotivoInactividadMaquinaria = state.motivoInactividad;
+            });
+            dev.log('Catálogo conceptos actualizado desde API');
+          } else if (state is ConceptoFailure) {
+            dev.log('Error al cargar catálogo conceptos: ${state.toString()}');
+          }
+        }),
       ],
       child: Scaffold(
         backgroundColor: mainBgColor,
@@ -538,16 +585,26 @@ class _JfMainScreenState extends State<JfMainScreen>
             controller: _tabController,
             isScrollable: false,
             labelPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-            labelStyle: const TextStyle(fontSize: 12),
+            labelStyle: const TextStyle(fontSize: 10),
+            unselectedLabelStyle: const TextStyle(fontSize: 10),
             labelColor: Colors.white,
             dividerColor: Colors.white,
             indicatorColor: Colors.white,
+            // tabs: const [
+            //   Tab(text: 'Generales'),
+            //   Tab(text: 'Avances de obra'),
+            //   Tab(text: 'Maquinaria'),
+            //   Tab(text: 'Personal'),
+            //   Tab(text: 'Fotografías'),
+            //   Tab(text: 'Guardar')
+            // ],
             tabs: const [
-              Tab(text: 'Generales'),
-              Tab(text: 'Avances de obra'),
-              Tab(text: 'Maquinaria'),
-              Tab(text: 'Personal'),
-              Tab(text: 'Fotografías'),
+              Tab(icon: Icon(Icons.info)), // Generales
+              Tab(icon: Icon(Icons.bar_chart)), // Avances de obra
+              Tab(icon: Icon(Icons.construction)), // Maquinaria
+              Tab(icon: Icon(Icons.groups)), // Personal
+              Tab(icon: Icon(Icons.camera)), // Fotografías
+              Tab(icon: Icon(Icons.save)), // Guardar
             ],
           ),
         ),
@@ -574,6 +631,7 @@ class _JfMainScreenState extends State<JfMainScreen>
                       child: Column(
                         children: [
                           GeneralesWidget(
+                            sobrestante: widget.user.user!.name,
                             token: widget.user.token,
                             obraId: widget.user.user!.obraId!,
                             responsive: responsive,
@@ -659,9 +717,17 @@ class _JfMainScreenState extends State<JfMainScreen>
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: ImageGalleryScreen(),
                   ),
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: GuardarReporteScreen(
+                      user: widget.user,
+                    ),
+                  ),
                 ],
               ),
-        bottomNavigationBar: Padding(
+        /* bottomNavigationBar: Padding(
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton(
             onPressed: guardarDatos,
@@ -681,7 +747,7 @@ class _JfMainScreenState extends State<JfMainScreen>
               ),
             ),
           ),
-        ),
+        ),*/
       ),
     );
   }

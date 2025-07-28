@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:jfapp/models/camiones.model.dart';
 import 'package:jfapp/models/catalogo-generales.model.dart';
 import 'package:jfapp/models/catalogo-maquinaria.model.dart';
+import 'package:jfapp/models/catalogo-motivos-inactividad-maquinaria.model.dart';
 import 'package:jfapp/models/catalogo-personal.model.dart';
 import 'package:jfapp/models/catalogo-tipos-camion.model.dart';
 import 'package:jfapp/models/catalogos-agua.model.dart';
@@ -404,5 +405,17 @@ Future<String?> obtenerTextoDesdeAPI(
   } catch (e) {
     dev.log('Error al obtener texto del API: ${e.toString()}');
     return null;
+  }
+}
+
+getCatalogoInactividadMaquinaria(String token, int idObra) async {
+  final params = {'token': token, 'obra_id': idObra};
+  final response = await apiCall(params, 'getTiposMaquinaria');
+  //dev.log('Respuesta de catalogos de volumen: $response');
+  if (response == null) {
+    return 'Server error.';
+  } else {
+    final res = MotivosInactividadMaquinariaModel.fromJson(response);
+    return res;
   }
 }

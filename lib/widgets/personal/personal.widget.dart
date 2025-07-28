@@ -120,10 +120,29 @@ class _PersonalWidgetState extends State<PersonalWidget> {
       _selecciones[personal.id!] = seleccionado;
 
       if (seleccionado) {
-        _personalSeleccionado
-            .add(GuardarCatalogoPersonalModel(personal: personal));
+        _personalSeleccionado.add(
+          GuardarCatalogoPersonalModel(
+            personal: personal,
+          ),
+        );
       } else {
         _personalSeleccionado.removeWhere((p) => p.personal?.id == personal.id);
+      }
+
+      PersonalProvider.setPersonal('personal', _personalSeleccionado);
+    });
+  }
+
+  void _actualizarActividad(Personal personal, String value) {
+    setState(() {
+      personal.actividad = value;
+
+      final index = _personalSeleccionado
+          .indexWhere((p) => p.personal?.id == personal.id);
+      if (index != -1) {
+        _personalSeleccionado[index] = GuardarCatalogoPersonalModel(
+          personal: personal,
+        );
       }
 
       PersonalProvider.setPersonal('personal', _personalSeleccionado);
@@ -149,7 +168,7 @@ class _PersonalWidgetState extends State<PersonalWidget> {
     );
   }
 
-  Widget _buildListaPersonal() {
+  /*Widget _buildListaPersonal() {
     return ListView.builder(
       itemCount: _personalFiltrado.isEmpty ? 1 : _personalFiltrado.length,
       itemBuilder: (context, index) {
@@ -184,6 +203,69 @@ class _PersonalWidgetState extends State<PersonalWidget> {
               backgroundColor: Colors.grey[200],
               child: Icon(Icons.person, color: Colors.grey[600]),
             ),
+          ),
+        );
+      },
+    );
+  }*/
+
+  Widget _buildListaPersonal() {
+    return ListView.builder(
+      itemCount: _personalFiltrado.isEmpty ? 1 : _personalFiltrado.length,
+      itemBuilder: (context, index) {
+        if (_personalFiltrado.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                _searchController.text.isEmpty
+                    ? 'No hay personal disponible'
+                    : 'No se encontraron resultados',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+          );
+        }
+
+        final personal = _personalFiltrado[index];
+        final estaSeleccionado = _selecciones[personal.id!] ?? false;
+
+        return Card(
+          color: Colors.grey[200],
+          margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          elevation: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CheckboxListTile(
+                title: Text(
+                  personal.nombre ?? '',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(personal.puesto ?? ''),
+                value: estaSeleccionado,
+                onChanged: (value) => _actualizarSeleccion(personal, value!),
+                secondary: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
+                  child: Icon(Icons.person, color: Colors.grey[600]),
+                ),
+              ),
+              if (estaSeleccionado)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextFormField(
+                    initialValue: personal.actividad ?? '',
+                    decoration: InputDecoration(
+                      labelText: 'Actividad',
+                      hintText: 'Describe la actividad realizada...',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    onChanged: (value) => _actualizarActividad(personal, value),
+                  ),
+                ),
+              SizedBox(height: 12),
+            ],
           ),
         );
       },

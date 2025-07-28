@@ -28,14 +28,25 @@ class AcarreosAguaScreen extends StatefulWidget {
 
 class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
   final TextEditingController _viajesController = TextEditingController();
+  final TextEditingController _capacidadController = TextEditingController();
+  final TextEditingController _volumenController = TextEditingController();
+
   final TextEditingController _observacionesController =
       TextEditingController();
   Pipas? _selectedPipa;
   Origenes? _selectedOrigen;
   Destinos? _selectedDestino;
 
+  void _calcularVolumen() {
+    double numeroViajes = double.tryParse(_viajesController.text) ?? 0.0;
+    double capacidad = double.tryParse(_capacidadController.text) ?? 0.0;
+    _volumenController.text = (numeroViajes * capacidad).toStringAsFixed(2);
+  }
+
   void _guardarAcarreo() {
     if (_viajesController.text.isNotEmpty &&
+        _capacidadController.text.isNotEmpty &&
+        _volumenController.text.isNotEmpty &&
         _selectedPipa != null &&
         _selectedOrigen != null &&
         _selectedDestino != null) {
@@ -44,6 +55,8 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
         origen: _selectedOrigen,
         destino: _selectedDestino,
         viajes: int.parse(_viajesController.text),
+        capacidad: double.parse(_capacidadController.text),
+        volumen: double.parse(_volumenController.text),
         observaciones: _observacionesController.text,
       );
       Navigator.pop(context, acarreo);
@@ -59,8 +72,12 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
     super.initState();
     if (widget.acarreoExistente != null) {
       _viajesController.text = widget.acarreoExistente!.viajes.toString();
+      _capacidadController.text = widget.acarreoExistente!.capacidad.toString();
+      _volumenController.text = widget.acarreoExistente!.volumen.toString();
       _observacionesController.text = widget.acarreoExistente!.observaciones!;
     }
+    _viajesController.addListener(_calcularVolumen);
+    _capacidadController.addListener(_calcularVolumen);
   }
 
   Pipas? _findPipa(Pipas? pipa, List<Pipas> pipas) {
@@ -156,8 +173,10 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
             isExpanded: true,
             onChanged: (Pipas? newValue) {
               setState(() {
-                print('Material seleccionado: ${newValue?.numeroEconomico}');
+                ///print('Material seleccionado: ${newValue?.numeroEconomico}');
                 _selectedPipa = newValue;
+                _capacidadController.text =
+                    newValue?.capacidad!.toStringAsFixed(2) ?? '';
               });
             },
             items: pipas.map<DropdownMenuItem<Pipas>>((Pipas pipa) {
@@ -233,58 +252,71 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
             }).toList(),
           ),
           SizedBox(height: responsive.dp(1)),
-
+          _buildTextField(
+            _capacidadController, "Capacidad",
+            TextInputType.number,
+            true,
+            enabled: false, // Solo lectura
+          ),
+          _buildTextField(_viajesController, 'Escriba la cantidad de viajes',
+              TextInputType.number, true),
+          _buildTextField(_volumenController, 'Volumen calculado',
+              TextInputType.number, true,
+              enabled: false),
+          _buildTextField(_observacionesController, 'Escriba las observaciones',
+              TextInputType.text, false,
+              maxLines: 5),
           SizedBox(height: responsive.dp(1)),
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: TextField(
-              controller: _viajesController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Escriba la cantidad de viajes',
-                labelStyle: TextStyle(color: customBlack),
-                filled: true,
-                fillColor: Colors.white, // Fondo blanco
-                border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(10.0), // Bordes redondeados
-                  borderSide: BorderSide(
-                      color: Colors.black, width: 1.0), // Borde negro
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: BorderSide(
-                      color: Colors.black,
-                      width: 2.0), // Borde negro al enfocar
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: TextFormField(
-              controller: _observacionesController,
-              maxLines: 5, // Permite múltiples líneas
-              decoration: InputDecoration(
-                labelText: 'Observaciones',
-                labelStyle: TextStyle(color: customBlack),
-                filled: true,
-                fillColor: Colors.white, // Fondo blanco
-                border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(10.0), // Bordes redondeados
-                  borderSide: BorderSide(
-                      color: Colors.black, width: 1.0), // Borde negro
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: BorderSide(
-                      color: Colors.black,
-                      width: 2.0), // Borde negro al enfocar
-                ),
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 5),
+          //   child: TextField(
+          //     controller: _viajesController,
+          //     keyboardType: TextInputType.number,
+          //     decoration: InputDecoration(
+          //       labelText: 'Escriba la cantidad de viajes',
+          //       labelStyle: TextStyle(color: customBlack),
+          //       filled: true,
+          //       fillColor: Colors.white, // Fondo blanco
+          //       border: OutlineInputBorder(
+          //         borderRadius:
+          //             BorderRadius.circular(10.0), // Bordes redondeados
+          //         borderSide: BorderSide(
+          //             color: Colors.black, width: 1.0), // Borde negro
+          //       ),
+          //       focusedBorder: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(10.0),
+          //         borderSide: BorderSide(
+          //             color: Colors.black,
+          //             width: 2.0), // Borde negro al enfocar
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 5),
+          //   child: TextFormField(
+          //     controller: _observacionesController,
+          //     maxLines: 5, // Permite múltiples líneas
+          //     decoration: InputDecoration(
+          //       labelText: 'Observaciones',
+          //       labelStyle: TextStyle(color: customBlack),
+          //       filled: true,
+          //       fillColor: Colors.white, // Fondo blanco
+          //       border: OutlineInputBorder(
+          //         borderRadius:
+          //             BorderRadius.circular(10.0), // Bordes redondeados
+          //         borderSide: BorderSide(
+          //             color: Colors.black, width: 1.0), // Borde negro
+          //       ),
+          //       focusedBorder: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(10.0),
+          //         borderSide: BorderSide(
+          //             color: Colors.black,
+          //             width: 2.0), // Borde negro al enfocar
+          //       ),
+          //     ),
+          //   ),
+          // ),
           SizedBox(height: responsive.dp(2)),
           CustomSaveButton(
             onPressed: _guardarAcarreo,
@@ -294,6 +326,36 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
           //   child: Text('Guardar'),
           // ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      TextInputType inputType, bool decimal,
+      {bool enabled = true, int maxLines = 1}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: TextField(
+        controller: controller,
+        keyboardType: decimal
+            ? TextInputType.numberWithOptions(decimal: true)
+            : inputType,
+        enabled: enabled,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: customBlack),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.black, width: 1.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.black, width: 2.0),
+          ),
+        ),
       ),
     );
   }

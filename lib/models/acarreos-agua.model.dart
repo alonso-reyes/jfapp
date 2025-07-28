@@ -8,6 +8,8 @@ class AcarreoAgua {
   final Origenes? origen;
   final Destinos? destino;
   final int viajes;
+  final double capacidad;
+  final double volumen;
   final String? observaciones;
 
   AcarreoAgua({
@@ -15,6 +17,8 @@ class AcarreoAgua {
     required this.origen,
     required this.destino,
     required this.viajes,
+    required this.capacidad,
+    required this.volumen,
     this.observaciones,
   });
 
@@ -24,6 +28,8 @@ class AcarreoAgua {
       'origen': origen?.toJson(),
       'destino': destino?.toJson(),
       'viajes': viajes,
+      'capacidad': capacidad,
+      'volumen': volumen,
       'observaciones': observaciones,
     };
   }
@@ -35,6 +41,8 @@ class AcarreoAgua {
       'origen': origen?.toJson(),
       'destino': destino?.toJson(),
       'viajes': viajes,
+      'capacidad': capacidad,
+      'volumen': volumen,
       'observaciones': observaciones,
     });
   }
@@ -47,6 +55,8 @@ class AcarreoAgua {
       origen: Origenes.fromJson(data['origen']),
       destino: Destinos.fromJson(data['destino']),
       viajes: data['viajes'],
+      capacidad: data['capacidad'],
+      volumen: data['volumen'],
       observaciones: data['observaciones'],
     );
   }

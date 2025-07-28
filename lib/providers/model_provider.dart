@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:jfapp/models/catalogo-generales.model.dart';
 import 'package:jfapp/models/catalogo-maquinaria.model.dart';
+import 'package:jfapp/models/catalogo-motivos-inactividad-maquinaria.model.dart';
 import 'package:jfapp/models/catalogo-personal.model.dart';
 import 'package:jfapp/models/concepto.model.dart';
 import 'package:jfapp/models/obra.model.dart';
@@ -199,6 +200,36 @@ class ModelProvider {
   /// Limpiar el catálogo de personal (opcional)
   static Future<void> limpiarCatalogoPersonal() async {
     await _preferences.remove('catalogoPersonal');
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///
+  ///
+  /// /// Guardar el catálogo de conceptos en SharedPreferences
+  static Future<void> guardarCatalogoMotivosInactividad(
+      MotivosInactividadMaquinariaModel motivoInactividad) async {
+    final catalogoJson =
+        jsonEncode(motivoInactividad.toJson()); // Convertir a JSON
+    await _preferences.setString('catalogoMotivosInactividad', catalogoJson);
+  }
+
+  /// Cargar el catálogo de maquinaria desde SharedPreferences
+  static Future<MotivosInactividadMaquinariaModel?>
+      cargarCatalogoMotivosInactividad() async {
+    final catalogoJson = _preferences.getString('catalogoMotivosInactividad');
+
+    if (catalogoJson != null) {
+      final catalogoMap = jsonDecode(catalogoJson); // Convertir a Map
+      return MotivosInactividadMaquinariaModel.fromJson(
+          catalogoMap); // Convertir a objeto
+    } else {
+      return null; // Si no hay datos guardados, retorna null
+    }
+  }
+
+  /// Limpiar el catálogo de maquinaria (opcional)
+  static Future<void> limpiarCatalogoMotivosInactividad() async {
+    await _preferences.remove('catalogoMotivosInactividad');
   }
 
   /********************** Super intendente ******************************* */

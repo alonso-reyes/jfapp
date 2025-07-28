@@ -136,7 +136,7 @@ class _AcarreosMetroWidgetState extends State<AcarreosMetroWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Acarreos Metro Lineal',
+                    'Metro Lineal',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(

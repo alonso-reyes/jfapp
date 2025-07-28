@@ -221,19 +221,17 @@ class UsosMateriaLes {
 class TiposCamion {
   int id;
   String nombre;
+  double capacidad;
 
-  TiposCamion({
-    required this.id,
-    required this.nombre,
-  });
+  TiposCamion(
+      {required this.id, required this.nombre, required this.capacidad});
 
   factory TiposCamion.fromJson(Map<String, dynamic> json) => TiposCamion(
         id: json["id"],
         nombre: json["nombre"],
+        capacidad: double.tryParse(json['capacidad'].toString()) ?? 0.0,
       );
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "nombre": nombre,
-      };
+  Map<String, dynamic> toJson() =>
+      {"id": id, "nombre": nombre, "capacidad": capacidad};
 }

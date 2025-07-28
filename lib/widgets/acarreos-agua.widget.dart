@@ -255,6 +255,14 @@ class _AcarreosAguaWidgetState extends State<AcarreosAguaWidget> {
                                                 text:
                                                     '${acarreo.pipa?.numeroEconomico}\n'),
                                             TextSpan(
+                                              text: 'Capacidad: ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            TextSpan(
+                                                text:
+                                                    '${acarreo.pipa?.capacidad}\n'),
+                                            TextSpan(
                                               text: 'Origen: ',
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold),
@@ -277,6 +285,13 @@ class _AcarreosAguaWidgetState extends State<AcarreosAguaWidget> {
                                             ),
                                             TextSpan(
                                                 text: '${acarreo.viajes}\n'),
+                                            TextSpan(
+                                              text: 'Volumen: ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            TextSpan(
+                                                text: '${acarreo.volumen}\n'),
                                             TextSpan(
                                               text: 'Observaciones: ',
                                               style: TextStyle(

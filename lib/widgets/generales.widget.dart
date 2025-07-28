@@ -208,13 +208,14 @@ class GeneralesWidget extends StatefulWidget {
   final String token;
   final int obraId;
   final Responsive responsive;
+  final String sobrestante;
 
-  const GeneralesWidget({
-    super.key,
-    required this.token,
-    required this.obraId,
-    required this.responsive,
-  });
+  const GeneralesWidget(
+      {super.key,
+      required this.token,
+      required this.obraId,
+      required this.responsive,
+      required this.sobrestante});
 
   @override
   _GeneralesWidgetState createState() => _GeneralesWidgetState();
@@ -270,6 +271,7 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
       setState(() {
         catalogoGenerales = catalogoLocal;
         _isLoading = catalogoLocal == null;
+        _sobrestanteController.text = widget.sobrestante;
       });
       //print(catalogoLocal.toString());
 
@@ -421,7 +423,7 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
                                 .catalogoGenerales.zonas.isNotEmpty)
                               _buildZonaSelection(),
                             SizedBox(height: 16),
-                            _buildObservaciones()
+                            //_buildObservaciones()
                           ],
                         ),
                     ],
@@ -482,44 +484,22 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: TextField(
-                controller: _sobrestanteController,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  labelText: 'Escriba el nombre del sobrestante',
-                  labelStyle: TextStyle(color: customBlack),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1,
-                    ),
+                padding: const EdgeInsets.only(top: 5),
+                child: TextField(
+                  controller: _sobrestanteController,
+                  keyboardType: TextInputType.text,
+                  style: TextStyle(
+                      fontSize: 14, color: customBlack), // igual al Text
+                  maxLines: 1,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero, // sin padding adicional
+                    border: InputBorder.none,
+                    hintText: 'Escriba el nombre del sobrestante',
+                    hintStyle: TextStyle(color: Colors.grey[500]),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    // Borde cuando no está enfocado
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    // Borde cuando está enfocado
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                onChanged: (value) => _guardarDatosCampos(),
-              ),
-            ),
+                  onChanged: (value) => _guardarDatosCampos(),
+                )),
           ],
         ),
       ),

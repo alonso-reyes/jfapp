@@ -133,7 +133,7 @@ class _AcarreosAreaWidgetState extends State<AcarreosAreaWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Acarreos Area Opcional',
+                    'Area Opcional',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(

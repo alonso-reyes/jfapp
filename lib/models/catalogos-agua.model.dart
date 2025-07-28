@@ -107,7 +107,7 @@ class Pipas {
   String? numeroEconomico;
   String? modelo;
   String? tipo;
-  String? capacidad;
+  double? capacidad;
   String? estado;
   String? inactividad;
 

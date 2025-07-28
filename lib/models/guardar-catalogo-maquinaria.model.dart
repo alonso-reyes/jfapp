@@ -4,25 +4,28 @@ import 'package:jfapp/models/catalogo-maquinaria.model.dart';
 import 'package:jfapp/models/concepto.model.dart';
 
 class GuardarCatalogoMaquinariaModel {
-  final Concepto? concepto;
+  // final Concepto? concepto;
   final FamiliaMaquinaria? familia;
   final Maquinaria? maquinaria;
   final Operador? operador;
   final Horometro? horometro;
+  final String? actividad;
   final String? observaciones;
 
   GuardarCatalogoMaquinariaModel(
-      {required this.concepto,
+      {
+      // required this.concepto,
       required this.familia,
       required this.maquinaria,
       required this.horometro,
       this.operador,
+      this.actividad,
       this.observaciones});
 
   factory GuardarCatalogoMaquinariaModel.fromJson(Map<String, dynamic> json) {
     return GuardarCatalogoMaquinariaModel(
-      concepto:
-          json['concepto'] != null ? Concepto.fromJson(json['concepto']) : null,
+      // concepto:
+      //     json['concepto'] != null ? Concepto.fromJson(json['concepto']) : null,
       familia: json['familia'] != null
           ? FamiliaMaquinaria.fromJson(json['familia'])
           : null,
@@ -34,13 +37,14 @@ class GuardarCatalogoMaquinariaModel {
       horometro: json['horometro'] != null
           ? Horometro.fromJson(json['horometro'])
           : null,
+      actividad: json['actividad'],
       observaciones: json['observaciones'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'concepto': concepto?.toJson(),
+      // 'concepto': concepto?.toJson(),
       'familia': {
         'id': familia?.id,
         'familia': familia?.familia,
@@ -54,17 +58,19 @@ class GuardarCatalogoMaquinariaModel {
         'nombre': operador?.nombre,
       },
       'horometro': horometro?.toJson(),
+      'actividad': actividad,
       'observaciones': observaciones,
     };
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'concepto': concepto?.toJson(),
+      // 'concepto': concepto?.toJson(),
       'familia': familia?.toJson(),
       'maquinaria': maquinaria?.toJson(),
       'operador': operador?.toJson(),
       'horometro': horometro?.toJson(),
+      'actividad': actividad,
       'observaciones': observaciones,
     };
   }
@@ -73,7 +79,7 @@ class GuardarCatalogoMaquinariaModel {
   @override
   String toString() {
     return jsonEncode({
-      'concepto': concepto?.toJson(),
+      // 'concepto': concepto?.toJson(),
       'familia': {
         'id': familia?.id,
         'familia': familia?.familia,
@@ -87,6 +93,7 @@ class GuardarCatalogoMaquinariaModel {
         'nombre': operador?.nombre,
       },
       'horometro': horometro?.toJson(),
+      'actividad': actividad,
       'observaciones': observaciones, // 👈 Para string también
     });
   }
@@ -95,7 +102,7 @@ class GuardarCatalogoMaquinariaModel {
   factory GuardarCatalogoMaquinariaModel.fromString(String str) {
     final Map<String, dynamic> data = jsonDecode(str);
     return GuardarCatalogoMaquinariaModel(
-      concepto: Concepto.fromJson(data['concepto']),
+      // concepto: Concepto.fromJson(data['concepto']),
       familia: FamiliaMaquinaria(
         id: data['familia']['id'],
         familia: data['familia']['familia'],
@@ -112,6 +119,7 @@ class GuardarCatalogoMaquinariaModel {
         nombre: data['operador']['nombre'],
       ),
       horometro: Horometro.fromJson(data['horometro']),
+      actividad: data['actividad'],
       observaciones: data['observaciones'],
     );
   }

@@ -3,16 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:jfapp/blocs/concepto/concepto_bloc.dart';
-import 'package:jfapp/blocs/concepto/concepto_event.dart';
-import 'package:jfapp/blocs/concepto/concepto_state.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_bloc.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_event.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_state.dart';
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/responsive_helper.dart';
 import 'package:jfapp/models/catalogo-maquinaria.model.dart';
-import 'package:jfapp/models/concepto.model.dart';
 import 'package:jfapp/models/guardar-catalogo-maquinaria.model.dart';
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/providers/maquinaria_provider.dart';
@@ -42,16 +38,12 @@ class AgregarMaquinariaScreen extends StatefulWidget {
 class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
   bool _tieneConexion = false;
   bool _catalogoMaquinariaListo = false;
-  bool _catalogoConceptosListo = false;
   bool _isLoading = true;
 
   CatalogoMaquinariaResponse? catalogoMaquinaria;
   FamiliaMaquinaria? _selectedFamilia;
   Maquinaria? _selectedMaquinaria;
   Operador? _selectedOperador;
-
-  ConceptoModel? catalogoConceptos;
-  Concepto? _selectedConcepto;
 
   final TextEditingController _descripcionController = TextEditingController();
 
@@ -63,8 +55,11 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
       TextEditingController();
   final TextEditingController _observacionesController =
       TextEditingController();
+  final TextEditingController _actividadController = TextEditingController();
 
   List<GuardarCatalogoMaquinariaModel> _maquinariaGuardada = [];
+
+  List<Map<String, TextEditingController>> _horometros = [];
 
   Future<bool> tieneConexionInternet() async {
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -74,10 +69,15 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
   @override
   void initState() {
     super.initState();
-    print('Maquinas cargandas previamente -------');
-    print(widget.maquinasCargadas);
+    // print('Maquinas cargandas previamente -------');
+    // print(widget.maquinasCargadas);
     _verificarConexionYCargarDatos();
     _cargarMaquinariaGuardada();
+
+    _horometros.add({
+      'inicial': TextEditingController(),
+      'final': TextEditingController(),
+    });
 
     // Verificar si el objeto maquinaEditar no es nulo
     if (widget.maquinaEditar != null) {
@@ -102,17 +102,9 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
         token: widget.user.token,
         obraId: widget.user.user!.obraId!,
       ));
-
-      final conceptoBloc = context.read<ConceptoBloc>();
-      conceptoBloc.add(ConceptoInStartRequest(
-        token: widget.user.token,
-        obraId: widget.user.user!.obraId!,
-      ));
     } else {
       // Si no hay conexión, cargar datos desde SharedPreferences
       catalogoMaquinaria = await ModelProvider.cargarCatalogoMaquinaria();
-      catalogoConceptos = await ModelProvider.cargarCatalogoConcepto();
-
       _intentarCargarmaquinaEditar();
     }
     //await Future.delayed(Duration(seconds: 3));
@@ -133,28 +125,11 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
     // print("Intentando cargar datos de maquina existente");
     // print(
     //     "Familia maquinarias: ${catalogoMaquinaria?.catalogoMaquinarias.length ?? 'nulo'}");
-    // print("Conceptos: ${catalogoConceptos?.conceptos.length ?? 'nulo'}");
-
     // Verificar nuevamente que los catálogos no sean nulos y tengan datos
     if (catalogoMaquinaria == null ||
-        catalogoConceptos == null ||
-        catalogoMaquinaria!.catalogoMaquinarias.isEmpty ||
-        catalogoConceptos!.conceptos.isEmpty) {
+        catalogoMaquinaria!.catalogoMaquinarias.isEmpty) {
       //print("Catálogos no están listos aún");
       return;
-    }
-
-    // Buscar y establecer el concepto
-    if (widget.maquinaEditar!.concepto != null) {
-      try {
-        _selectedConcepto = catalogoConceptos!.conceptos.firstWhere(
-          (concepto) => concepto.id == widget.maquinaEditar!.concepto!.id,
-          orElse: () => widget.maquinaEditar!.concepto!,
-        );
-        //print("Concepto seleccionado: ${_selectedConcepto?.concepto}");
-      } catch (e) {
-        //print("Error al seleccionar concepto: $e");
-      }
     }
 
     // Buscar y establecer la familia
@@ -221,9 +196,7 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
   void _intentarCargarmaquinaEditar() {
     if (widget.maquinaEditar != null &&
         catalogoMaquinaria != null &&
-        catalogoConceptos != null &&
-        catalogoMaquinaria!.catalogoMaquinarias.isNotEmpty &&
-        catalogoConceptos!.conceptos.isNotEmpty) {
+        catalogoMaquinaria!.catalogoMaquinarias.isNotEmpty) {
       _cargarDatosmaquinaEditar();
     } else {
       setState(() {
@@ -292,44 +265,32 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
   // }
 
   void _guardarMaquinaria() {
-    final bool esConceptoInOMtto = _esConceptoInOMtto();
+    final horometroInicial = _horometroInicialController.text.isNotEmpty
+        ? double.tryParse(_horometroInicialController.text)
+        : null;
 
-    if (!esConceptoInOMtto && !_validarHorometros()) {
-      return;
-    }
+    final horometroFinal = _horometroFinalController.text.isNotEmpty
+        ? double.tryParse(_horometroFinalController.text)
+        : null;
 
-    final horometroInicial = esConceptoInOMtto
-        ? null
-        : (_horometroInicialController.text.isNotEmpty
-            ? double.tryParse(_horometroInicialController.text)
-            : null);
-
-    final horometroFinal = esConceptoInOMtto
-        ? null
-        : (_horometroFinalController.text.isNotEmpty
-            ? double.tryParse(_horometroFinalController.text)
-            : null);
-
-    if (_selectedConcepto != null &&
-        _selectedFamilia != null &&
+    if (_selectedFamilia != null &&
         _selectedMaquinaria != null &&
-        (esConceptoInOMtto ||
-            (_selectedOperador != null &&
-                horometroInicial != null &&
-                horometroFinal != null))) {
+        (_selectedOperador != null &&
+            horometroInicial != null &&
+            horometroFinal != null) &&
+        _actividadController.text.isNotEmpty) {
       final horometro = Horometro(
         horometroInicial: horometroInicial,
         horometroFinal: horometroFinal,
       );
 
       final guardarMaquinaria = GuardarCatalogoMaquinariaModel(
-        concepto: _selectedConcepto,
-        familia: _selectedFamilia,
-        maquinaria: _selectedMaquinaria,
-        operador: _selectedOperador,
-        horometro: horometro,
-        observaciones: _observacionesController.text,
-      );
+          familia: _selectedFamilia,
+          maquinaria: _selectedMaquinaria,
+          operador: _selectedOperador,
+          horometro: horometro,
+          observaciones: _observacionesController.text,
+          actividad: _actividadController.text);
 
       print(guardarMaquinaria);
       //return;
@@ -339,11 +300,6 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
         SnackBar(content: Text('Complete todos los campos requeridos')),
       );
     }
-  }
-
-  bool _esConceptoInOMtto() {
-    return _selectedConcepto?.concepto?.toLowerCase().contains('in') == true ||
-        _selectedConcepto?.concepto?.toLowerCase().contains('mtto') == true;
   }
 
   double? _obtenerUltimoHorometroFinal() {
@@ -380,7 +336,7 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                 ModelProvider.guardarCatalogoMaquinaria(catalogoMaquinaria!);
                 _catalogoMaquinariaListo = true;
 
-                if (_catalogoMaquinariaListo && _catalogoConceptosListo) {
+                if (_catalogoMaquinariaListo) {
                   _intentarCargarmaquinaEditar();
                   //_isLoading = false;
                 }
@@ -393,37 +349,6 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
               //       false; // Ocultar el indicador de carga después del retraso
               // });
             } else if (state is FamiliaMaquinariaFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text('Error al cargar los datos desde la API')),
-              );
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-        ),
-        BlocListener<ConceptoBloc, ConceptoState>(
-          listener: (context, state) async {
-            if (state is ConceptoSuccess) {
-              setState(() {
-                catalogoConceptos = state.concepto;
-                ModelProvider.guardarCatalogoConceptos(catalogoConceptos!);
-                _catalogoConceptosListo = true;
-
-                if (_catalogoMaquinariaListo && _catalogoConceptosListo) {
-                  _intentarCargarmaquinaEditar();
-                  //_isLoading = false;
-                }
-              });
-
-              // await Future.delayed(Duration(seconds: 1));
-
-              // setState(() {
-              //   _isLoading =
-              //       false; // Ocultar el indicador de carga después del retraso
-              // });
-            } else if (state is ConceptoFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content: Text('Error al cargar los datos desde la API')),
@@ -465,83 +390,6 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                               style: TextStyle(color: Colors.orange),
                             ),
                           ),
-
-                        // Dropdown para seleccionar el concepto
-                        Text(
-                          'Actividad/concepto',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        DropdownButton<Concepto>(
-                          value: _selectedConcepto,
-                          hint: Text("Seleccione una actividad"),
-                          isExpanded: true,
-                          onChanged: (Concepto? newValue) {
-                            setState(() {
-                              _selectedConcepto = newValue;
-
-                              _descripcionController.text =
-                                  newValue?.descripcion ?? '';
-
-                              if (_esConceptoInOMtto()) {
-                                _selectedOperador = null;
-                                _maquinariaController.clear();
-                                _operadorController.clear();
-                                _horometroInicialController.clear();
-                                _horometroFinalController.clear();
-                              }
-                            });
-                          },
-                          items: catalogoConceptos?.conceptos
-                                  .map<DropdownMenuItem<Concepto>>(
-                                      (Concepto concepto) {
-                                return DropdownMenuItem<Concepto>(
-                                  value: concepto,
-                                  child: Text(concepto.concepto),
-                                );
-                                // final displayText = concepto
-                                //         .descripcion.isNotEmpty
-                                //     ? '${concepto.concepto} - ${concepto.descripcion}'
-                                //     : concepto.concepto;
-
-                                // return DropdownMenuItem<Concepto>(
-                                //     value: concepto,
-                                //     child: Text(
-                                //       displayText,
-                                //       overflow: TextOverflow
-                                //           .ellipsis, // Para texto largo
-                                //     ));
-                              }).toList() ??
-                              [],
-                        ),
-                        SizedBox(height: 10),
-                        InputDecorator(
-                            decoration: InputDecoration(
-                              labelText: 'Descripción',
-                              prefixIcon: Icon(Icons.description, size: 20),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                            ),
-                            child: Text(
-                              _selectedConcepto?.descripcion ??
-                                  'Seleccione un concepto para ver su descripción',
-                              style: TextStyle(fontSize: 14),
-                            )),
-                        // TextFormField(
-                        //   controller: _descripcionController,
-                        //   decoration: InputDecoration(
-                        //     labelText: 'Descripción del concepto',
-                        //     border: OutlineInputBorder(),
-                        //     filled: true,
-                        //     fillColor: Colors.grey[100],
-                        //     contentPadding: EdgeInsets.symmetric(
-                        //         horizontal: 12, vertical: 12),
-                        //   ),
-                        //   readOnly: true,
-                        //   maxLines: 3,
-                        // ),
-
                         SizedBox(height: 16),
 
                         // Dropdown para seleccionar la familia
@@ -702,9 +550,94 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                         SizedBox(height: 16),
 
                         // Campos para horómetro inicial y final
-                        //if (_selectedMaquinaria != null)
-                        if (_selectedMaquinaria != null &&
-                            !_esConceptoInOMtto())
+                        if (_selectedMaquinaria != null)
+                          /*Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Horómetros',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 8),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: _horometros.length,
+                                itemBuilder: (context, index) {
+                                  final horometro = _horometros[index];
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text('Inicial',
+                                                  style:
+                                                      TextStyle(fontSize: 14)),
+                                              TextFormField(
+                                                controller:
+                                                    horometro['inicial'],
+                                                keyboardType: TextInputType
+                                                    .numberWithOptions(
+                                                        decimal: true),
+                                                decoration: InputDecoration(
+                                                  hintText: 'Inicial',
+                                                  border: OutlineInputBorder(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text('Final',
+                                                  style:
+                                                      TextStyle(fontSize: 14)),
+                                              TextFormField(
+                                                controller: horometro['final'],
+                                                keyboardType: TextInputType
+                                                    .numberWithOptions(
+                                                        decimal: true),
+                                                decoration: InputDecoration(
+                                                  hintText: 'Final',
+                                                  border: OutlineInputBorder(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(Icons.add_circle,
+                                              color: Colors.green),
+                                          onPressed: () {
+                                            setState(() {
+                                              _horometros.add({
+                                                'inicial':
+                                                    TextEditingController(),
+                                                'final':
+                                                    TextEditingController(),
+                                              });
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),*/
+
                           Column(
                             children: [
                               Text(
@@ -752,8 +685,7 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                                       ],
                                     ),
                                   ),
-                                  SizedBox(
-                                      width: 16), // Espacio entre los campos
+                                  SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -769,6 +701,7 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                                           decoration: InputDecoration(
                                             hintText: 'Final',
                                             border: OutlineInputBorder(),
+                                            fillColor: Colors.white,
                                           ),
                                           validator: (value) {
                                             if (value == null ||
@@ -788,49 +721,67 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                               ),
                             ],
                           ),
-                        SizedBox(height: 16),
-                        if (_esConceptoInOMtto())
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: TextFormField(
-                              controller: _observacionesController,
-                              maxLines: 5,
-                              decoration: InputDecoration(
-                                labelText: 'Observaciones',
-                                labelStyle: TextStyle(color: customBlack),
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[400]!,
-                                    width: 1.0,
+                        SizedBox(height: 20),
+
+                        if (_selectedMaquinaria != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Actividades realizadas',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  // Borde normal (no enfocado)
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[400]!,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  // Borde al enfocar
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[600]!,
-                                    width: 1.0,
+                                ],
+                              ),
+                              Divider(),
+                              SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: TextFormField(
+                                  controller: _actividadController,
+                                  maxLines: 5,
+                                  decoration: InputDecoration(
+                                    //labelText: 'Actividades realizadas',
+                                    labelStyle: TextStyle(color: customBlack),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[400]!,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      // Borde normal (no enfocado)
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[400]!,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      // Borde al enfocar
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[600]!,
+                                        width: 1.0,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                              SizedBox(height: 16),
+                            ],
                           ),
                         SizedBox(height: 16),
 
-                        // Botón para guardar
                         if (_selectedMaquinaria != null)
                           Center(
                             child: GestureDetector(

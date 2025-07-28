@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jfapp/blocs/camiones/camiones_bloc.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_bloc.dart';
 import 'package:jfapp/blocs/catalogos_acarreos_volumen/catalogos_acarreos_volumen_bloc.dart';
 import 'package:jfapp/blocs/concepto/concepto_bloc.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_bloc.dart';
@@ -46,6 +47,7 @@ void main() async {
         BlocProvider(create: (_) => CamionesBloc()),
         BlocProvider(create: (_) => CatalogosAcarreosVolumenBloc()),
         BlocProvider(create: (_) => FamiliaMaquinariaBloc()),
+        BlocProvider(create: (_) => CatalogoMotivosInactvidadMaquinariaBloc()),
         BlocProvider(create: (_) => CatalogoPersonalBloc()),
         BlocProvider(create: (_) => GeneralesBloc()),
         /* App super intendente */

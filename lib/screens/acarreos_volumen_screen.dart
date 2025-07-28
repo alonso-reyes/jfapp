@@ -338,6 +338,8 @@ class _AcarreosVolumenScreenState extends State<AcarreosVolumenScreen> {
             onChanged: (TiposCamion? newValue) {
               setState(() {
                 _selectedTipoCamion = newValue;
+                _capacidadController.text =
+                    newValue?.capacidad.toStringAsFixed(2) ?? '';
               });
               //_guardarDatos(); // Guardamos los datos al seleccionar el turno
             },
@@ -353,9 +355,14 @@ class _AcarreosVolumenScreenState extends State<AcarreosVolumenScreen> {
             }).toList(),
           ),
           SizedBox(height: responsive.dp(1)),
+
+          _buildTextField(
+            _capacidadController, "Capacidad",
+            TextInputType.number,
+            true,
+            enabled: false, // Solo lectura
+          ),
           _buildTextField(_viajesController, 'Escriba la cantidad de viajes',
-              TextInputType.number, true),
-          _buildTextField(_capacidadController, 'Escriba la capacidad',
               TextInputType.number, true),
           _buildTextField(_volumenController, 'Volumen calculado',
               TextInputType.number, true,

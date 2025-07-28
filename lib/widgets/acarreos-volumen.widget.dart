@@ -133,7 +133,7 @@ class _AcarreosVolumenWidgetState extends State<AcarreosVolumenWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Acarreos Volumen',
+                    'Volumen',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(

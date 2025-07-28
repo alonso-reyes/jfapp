@@ -330,15 +330,15 @@ class _MaquinariaWidgetState extends State<MaquinariaWidget> {
                                           child: Text.rich(
                                             TextSpan(
                                               children: [
-                                                TextSpan(
-                                                  text: 'Concepto: ',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                TextSpan(
-                                                    text:
-                                                        '${acarreo.concepto?.concepto}\n'),
+                                                // TextSpan(
+                                                //   text: 'Concepto: ',
+                                                //   style: TextStyle(
+                                                //       fontWeight:
+                                                //           FontWeight.bold),
+                                                // ),
+                                                // TextSpan(
+                                                //     text:
+                                                //         '${acarreo.concepto?.concepto}\n'),
                                                 TextSpan(
                                                   text: 'Numero económico: ',
                                                   style: TextStyle(
