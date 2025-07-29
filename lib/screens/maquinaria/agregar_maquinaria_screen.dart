@@ -3,12 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_bloc.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_event.dart';
+import 'package:jfapp/blocs/catalogo_motivos_inactividad_maquinaria/catalogo_motivos_inactividad_maquinaria_state.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_bloc.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_event.dart';
 import 'package:jfapp/blocs/familias_maquinaria/familias_maquinaria_state.dart';
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/responsive_helper.dart';
 import 'package:jfapp/models/catalogo-maquinaria.model.dart';
+import 'package:jfapp/models/catalogo-motivos-inactividad-maquinaria.model.dart';
 import 'package:jfapp/models/guardar-catalogo-maquinaria.model.dart';
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/providers/maquinaria_provider.dart';
@@ -38,12 +42,17 @@ class AgregarMaquinariaScreen extends StatefulWidget {
 class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
   bool _tieneConexion = false;
   bool _catalogoMaquinariaListo = false;
+  bool _catalogoMotivosInactividadListo = false;
   bool _isLoading = true;
+  bool _mostrarDropdownMotivo = false;
 
   CatalogoMaquinariaResponse? catalogoMaquinaria;
   FamiliaMaquinaria? _selectedFamilia;
   Maquinaria? _selectedMaquinaria;
   Operador? _selectedOperador;
+
+  MotivosInactividadMaquinariaModel? catalogoMotivosInactividad;
+  MotivosInactividadMaquinaria? _selectedMotivo;
 
   final TextEditingController _descripcionController = TextEditingController();
 
@@ -102,9 +111,20 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
         token: widget.user.token,
         obraId: widget.user.user!.obraId!,
       ));
+
+      final motivoInactividadBloc =
+          context.read<CatalogoMotivosInactvidadMaquinariaBloc>();
+      motivoInactividadBloc
+          .add(CatalogoMotivosInactvidadMaquinariaInStartRequest(
+        token: widget.user.token,
+        obraId: widget.user.user!.obraId!,
+      ));
     } else {
       // Si no hay conexión, cargar datos desde SharedPreferences
       catalogoMaquinaria = await ModelProvider.cargarCatalogoMaquinaria();
+      catalogoMotivosInactividad =
+          await ModelProvider.cargarCatalogoMotivosInactividad();
+
       _intentarCargarmaquinaEditar();
     }
     //await Future.delayed(Duration(seconds: 3));
@@ -127,9 +147,23 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
     //     "Familia maquinarias: ${catalogoMaquinaria?.catalogoMaquinarias.length ?? 'nulo'}");
     // Verificar nuevamente que los catálogos no sean nulos y tengan datos
     if (catalogoMaquinaria == null ||
+        catalogoMotivosInactividad == null ||
         catalogoMaquinaria!.catalogoMaquinarias.isEmpty) {
       //print("Catálogos no están listos aún");
       return;
+    }
+
+    if (widget.maquinaEditar!.motivoInactividadId != null) {
+      try {
+        _selectedMotivo =
+            catalogoMotivosInactividad!.motivosInactividadMaquinaria.firstWhere(
+          (motivo) => motivo.id == widget.maquinaEditar!.motivoInactividadId!,
+          // orElse: () => widget.maquinaEditar!.motivoInactividadId,
+        );
+        //print("Concepto seleccionado: ${_selectedConcepto?.concepto}");
+      } catch (e) {
+        //print("Error al seleccionar concepto: $e");
+      }
     }
 
     // Buscar y establecer la familia
@@ -196,6 +230,7 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
   void _intentarCargarmaquinaEditar() {
     if (widget.maquinaEditar != null &&
         catalogoMaquinaria != null &&
+        catalogoMotivosInactividad != null &&
         catalogoMaquinaria!.catalogoMaquinarias.isNotEmpty) {
       _cargarDatosmaquinaEditar();
     } else {
@@ -290,10 +325,11 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
           operador: _selectedOperador,
           horometro: horometro,
           observaciones: _observacionesController.text,
-          actividad: _actividadController.text);
+          actividad: _actividadController.text,
+          motivoInactividadId: _selectedMotivo?.id ?? 0);
 
-      print(guardarMaquinaria);
-      //return;
+      // print(guardarMaquinaria);
+      // return;
       Navigator.pop(context, guardarMaquinaria);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -349,6 +385,33 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
               //       false; // Ocultar el indicador de carga después del retraso
               // });
             } else if (state is FamiliaMaquinariaFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text('Error al cargar los datos desde la API')),
+              );
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+        ),
+        BlocListener<CatalogoMotivosInactvidadMaquinariaBloc,
+            CatalogoMotivosInactvidadMaquinariaState>(
+          listener: (context, state) async {
+            if (state is CatalogoMotivosInactvidadMaquinariaSuccess) {
+              setState(() {
+                catalogoMotivosInactividad = state.motivoInactividad;
+                ModelProvider.guardarCatalogoMotivosInactividad(
+                    catalogoMotivosInactividad!);
+                _catalogoMotivosInactividadListo = true;
+
+                if (_catalogoMaquinariaListo &&
+                    _catalogoMotivosInactividadListo) {
+                  _intentarCargarmaquinaEditar();
+                  //_isLoading = false;
+                }
+              });
+            } else if (state is CatalogoMotivosInactvidadMaquinariaFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content: Text('Error al cargar los datos desde la API')),
@@ -781,6 +844,75 @@ class _AgregarMaquinariaScreenState extends State<AgregarMaquinariaScreen> {
                             ],
                           ),
                         SizedBox(height: 16),
+
+                        // Dropdown para seleccionar el motivo de la inactividad
+                        if (_selectedMaquinaria != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '¿La maquinaria estuvo inactiva?',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              CheckboxListTile(
+                                title: Text("Mostrar motivo de inactividad"),
+                                value: _mostrarDropdownMotivo,
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _mostrarDropdownMotivo = value ?? false;
+                                    if (!_mostrarDropdownMotivo) {
+                                      _selectedMotivo =
+                                          null; // Limpiar si se desactiva
+                                    }
+                                  });
+                                },
+                              ),
+                              if (_mostrarDropdownMotivo)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Motivo de inactividad',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    DropdownButton<
+                                        MotivosInactividadMaquinaria>(
+                                      value: _selectedMotivo,
+                                      hint: Text(
+                                          "Seleccione un motivo de inactividad de la maquinaria"),
+                                      isExpanded: true,
+                                      onChanged: (MotivosInactividadMaquinaria?
+                                          newValue) {
+                                        setState(() {
+                                          _selectedMotivo = newValue;
+                                        });
+                                      },
+                                      items: catalogoMotivosInactividad
+                                              ?.motivosInactividadMaquinaria
+                                              .map<
+                                                      DropdownMenuItem<
+                                                          MotivosInactividadMaquinaria>>(
+                                                  (MotivosInactividadMaquinaria
+                                                      motivo) {
+                                            return DropdownMenuItem<
+                                                MotivosInactividadMaquinaria>(
+                                              value: motivo,
+                                              child: Text(
+                                                  motivo.motivoInactividad),
+                                            );
+                                          }).toList() ??
+                                          [],
+                                    ),
+                                    SizedBox(height: 10),
+                                  ],
+                                ),
+                            ],
+                          ),
 
                         if (_selectedMaquinaria != null)
                           Center(

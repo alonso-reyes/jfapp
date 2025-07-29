@@ -28,9 +28,12 @@ class MotivosInactividadMaquinariaModel {
       MotivosInactividadMaquinariaModel(
         success: json["success"],
         messages: json["messages"],
-        motivosInactividadMaquinaria: List<MotivosInactividadMaquinaria>.from(
-            json["motivos_inactividad_maquinaria"]
-                .map((x) => MotivosInactividadMaquinaria.fromJson(x))),
+        motivosInactividadMaquinaria:
+            json["motivos_inactividad_maquinaria"] != null
+                ? List<MotivosInactividadMaquinaria>.from(
+                    json["motivos_inactividad_maquinaria"]
+                        .map((x) => MotivosInactividadMaquinaria.fromJson(x)))
+                : [], // <-- lista vacía si viene null
       );
 
   Map<String, dynamic> toJson() => {

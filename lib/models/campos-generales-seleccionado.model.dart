@@ -16,7 +16,7 @@ class CampoGeneralesSeleccionado {
 
   factory CampoGeneralesSeleccionado.fromMap(Map<String, dynamic> json) =>
       CampoGeneralesSeleccionado(
-        sobrestante: json["sobrestante"],
+        sobrestante: json["sobrestante"] ?? '',
         observaciones: json["observaciones"] ?? '',
       );
 

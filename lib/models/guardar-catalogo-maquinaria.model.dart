@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:jfapp/models/catalogo-maquinaria.model.dart';
+import 'package:jfapp/models/catalogo-motivos-inactividad-maquinaria.model.dart';
 import 'package:jfapp/models/concepto.model.dart';
 
 class GuardarCatalogoMaquinariaModel {
@@ -10,7 +11,9 @@ class GuardarCatalogoMaquinariaModel {
   final Operador? operador;
   final Horometro? horometro;
   final String? actividad;
+  // final MotivosInactividadMaquinaria? motivoInactividad;
   final String? observaciones;
+  final int? motivoInactividadId;
 
   GuardarCatalogoMaquinariaModel(
       {
@@ -20,6 +23,8 @@ class GuardarCatalogoMaquinariaModel {
       required this.horometro,
       this.operador,
       this.actividad,
+      // this.motivoInactividad,
+      this.motivoInactividadId,
       this.observaciones});
 
   factory GuardarCatalogoMaquinariaModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +43,11 @@ class GuardarCatalogoMaquinariaModel {
           ? Horometro.fromJson(json['horometro'])
           : null,
       actividad: json['actividad'],
+      // motivoInactividad: json['motivoInactividad'] != null
+      //     ? MotivosInactividadMaquinaria.fromJson(json['motivoInactividad'])
+      //     : null,
+      motivoInactividadId: json['id_motivo_inactividad'] ?? 0,
+
       observaciones: json['observaciones'],
     );
   }
@@ -59,6 +69,8 @@ class GuardarCatalogoMaquinariaModel {
       },
       'horometro': horometro?.toJson(),
       'actividad': actividad,
+      // 'motivoInactividad': motivoInactividad?.toJson(),
+      'id_motivo_inactividad': motivoInactividadId,
       'observaciones': observaciones,
     };
   }
@@ -71,6 +83,8 @@ class GuardarCatalogoMaquinariaModel {
       'operador': operador?.toJson(),
       'horometro': horometro?.toJson(),
       'actividad': actividad,
+      // 'motivoInactividad': motivoInactividad?.toJson(),
+      'id_motivo_inactividad': motivoInactividadId,
       'observaciones': observaciones,
     };
   }
@@ -94,6 +108,8 @@ class GuardarCatalogoMaquinariaModel {
       },
       'horometro': horometro?.toJson(),
       'actividad': actividad,
+      'id_motivo_inactividad': motivoInactividadId,
+      // 'motivoInactividad': motivoInactividad?.toJson(),
       'observaciones': observaciones, // 👈 Para string también
     });
   }
@@ -120,6 +136,9 @@ class GuardarCatalogoMaquinariaModel {
       ),
       horometro: Horometro.fromJson(data['horometro']),
       actividad: data['actividad'],
+      // motivoInactividad:
+      //     MotivosInactividadMaquinaria.fromJson(data['motivoInactividad']),
+      motivoInactividadId: data['id_motivo_inactividad'],
       observaciones: data['observaciones'],
     );
   }

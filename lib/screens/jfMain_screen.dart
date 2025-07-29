@@ -603,7 +603,7 @@ class _JfMainScreenState extends State<JfMainScreen>
               Tab(icon: Icon(Icons.bar_chart)), // Avances de obra
               Tab(icon: Icon(Icons.construction)), // Maquinaria
               Tab(icon: Icon(Icons.groups)), // Personal
-              Tab(icon: Icon(Icons.camera)), // Fotografías
+              Tab(icon: Icon(Icons.photo_camera)), // Fotografías
               Tab(icon: Icon(Icons.save)), // Guardar
             ],
           ),

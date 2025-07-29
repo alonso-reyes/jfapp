@@ -410,7 +410,8 @@ Future<String?> obtenerTextoDesdeAPI(
 
 getCatalogoInactividadMaquinaria(String token, int idObra) async {
   final params = {'token': token, 'obra_id': idObra};
-  final response = await apiCall(params, 'getTiposMaquinaria');
+  final response =
+      await apiCall(params, 'getCatalogoMotivosInactividadMaquinaria');
   //dev.log('Respuesta de catalogos de volumen: $response');
   if (response == null) {
     return 'Server error.';

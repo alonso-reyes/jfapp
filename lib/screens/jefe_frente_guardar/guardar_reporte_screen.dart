@@ -67,8 +67,8 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
     }
 
     try {
-      final campoGeneralesSeleccionado =
-          PreferenceProvider.getCampoSeleccionado();
+      // final campoGeneralesSeleccionado =
+      //     PreferenceProvider.getCampoSeleccionado();
       final turnoSeleccionado = PreferenceProvider.getTurnoSeleccionado();
       final zonaSeleccionada = PreferenceProvider.getZonaTrabajoSeleccionada();
       final acarreosVolumen =
@@ -81,20 +81,20 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
       final personal = PersonalProvider.getPersonal('personal');
       final fotografias = PhotoProvider.getImagesWithDescriptions('images');
 
-      // print(acarreosAgua);
+      // print(turnoSeleccionado);
       // return;
       // Validaciones
-      if (!CamposGeneralesValidationHelper.areCamposGeneralesComplete(
-          campoGeneralesSeleccionado)) {
-        final errorMessage =
-            CamposGeneralesValidationHelper.getIncompleteCamposMessage(
-                campoGeneralesSeleccionado);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage!)),
-        );
-        Navigator.pop(context);
-        return;
-      }
+      // if (!CamposGeneralesValidationHelper.areCamposGeneralesComplete(
+      //     campoGeneralesSeleccionado)) {
+      //   final errorMessage =
+      //       CamposGeneralesValidationHelper.getIncompleteCamposMessage(
+      //           campoGeneralesSeleccionado);
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text(errorMessage!)),
+      //   );
+      //   Navigator.pop(context);
+      //   return;
+      // }
 
       if (!TurnoValidationHelper.isTurnoComplete(turnoSeleccionado)) {
         final errorMessage =
@@ -119,7 +119,7 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
 
       final Map<String, dynamic> reporteData = {
         'usuario_id': widget.user.user!.id,
-        'generales': campoGeneralesSeleccionado!.toMap(),
+        // 'generales': campoGeneralesSeleccionado!.toMap(),
         'turno': turnoSeleccionado!.toMap(),
         'zona_trabajo': zonaSeleccionada!.toMap(),
         'observaciones': _observacionesController.text,
@@ -135,6 +135,9 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
         'personal': personal.map((persona) => persona.toJson()).toList(),
         'fotografias': fotografias,
       };
+
+      // dev.log(reporteData);
+      // return;
 
       // Mostrar loading
       showDialog(
