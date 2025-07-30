@@ -81,13 +81,13 @@ class MyApp extends StatelessWidget {
       user: testUser,
     );
 
-    return MaterialApp(
+    /*return MaterialApp(
       title: 'JFAPP',
       theme: ThemeData(
         useMaterial3: true,
       ),
       home: JfMainScreen(user: testUserModel),
-    );
+    );*/
 
     return MaterialApp(
       title: 'JFAPP',
