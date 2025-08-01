@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -24,6 +25,7 @@ import 'dart:developer' as dev;
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/models/uso-material.model.dart';
 import 'package:jfapp/models/zonas-trabajo.model.dart';
+import 'package:path_provider/path_provider.dart';
 
 Future apiCall(Map<String, dynamic> params, String endpoint) async {
   try {
@@ -343,6 +345,38 @@ getReporteDiarioWhatsapp(String token, int idObra) async {
   } else {
     final res = ReporteDiarioWaModel.fromJson(response);
     return res;
+  }
+}
+
+Future<File?> descargarPDFReporte(
+    String token, int idObra, String fecha) async {
+  final url = Uri.parse(
+      'http://192.168.67.81:8000/api/enviar_reporte_diario'); // <-- Cambia esto a tu URL local
+
+  final response = await http.post(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/pdf',
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({'obra_id': idObra, 'fecha': fecha}),
+  );
+
+  dev.log('Status code: ${response.statusCode}');
+  dev.log('Content-Type: ${response.headers['content-type']}');
+  dev.log('Body length: ${response.bodyBytes.length}');
+
+  if (response.statusCode == 200 &&
+      response.headers['content-type'] == 'application/pdf') {
+    final tempDir = await getTemporaryDirectory();
+    final filePath = '${tempDir.path}/reporte_$idObra-$fecha.pdf';
+    final file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+    return file;
+  } else {
+    dev.log('Fallo al descargar PDF. Status: ${response.statusCode}');
+    return null;
   }
 }
 

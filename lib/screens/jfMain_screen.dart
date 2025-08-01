@@ -109,6 +109,7 @@ class _JfMainScreenState extends State<JfMainScreen>
       setState(() {
         _isLoading = true;
       });
+      await Future.delayed(Duration(milliseconds: 50));
 
       dev.log('Inicializando catálogos...');
 

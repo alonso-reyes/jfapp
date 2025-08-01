@@ -21,6 +21,7 @@ import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ReporteDiarioWaScreen extends StatefulWidget {
   final UserModel user;
@@ -201,7 +202,7 @@ Volumen Total: ${dataWa.acarreos.volumen.totalVolumen} m3
         date1.day == date2.day;
   }
 
-  Future<void> _descargarYCompartirPDF(String obraId, String fecha) async {
+  /* Future<void> _descargarYCompartirPDF(String obraId, String fecha) async {
     try {
       _tieneConexion = await ConnectivityHelper.tieneConexionInternet();
       if (!_tieneConexion) {
@@ -303,6 +304,62 @@ Volumen Total: ${dataWa.acarreos.volumen.totalVolumen} m3
       dev.log('Error en _descargarYCompartirPDF: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }*/
+
+  Future<void> _descargarYCompartirPDF(String obraId, String fecha) async {
+    try {
+      _tieneConexion = await ConnectivityHelper.tieneConexionInternet();
+      if (!_tieneConexion) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No hay conexión a internet')),
+        );
+        return;
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Generando reporte PDF...')
+              ],
+            ),
+          );
+        },
+      );
+
+      final token = widget.user.token;
+      final file = await descargarPDFReporte(token, int.parse(obraId), fecha);
+
+      // Cerrar el loader
+      if (Navigator.canPop(context)) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      if (file != null) {
+        // Compartir el archivo
+        await Share.shareXFiles([XFile(file.path)], text: 'Reporte Diario');
+      } else {
+        dev.log('El archivo PDF no se pudo descargar.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo generar el reporte PDF')),
+        );
+      }
+    } catch (e) {
+      if (Navigator.canPop(context)) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      dev.log('Error general: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }

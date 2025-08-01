@@ -141,7 +141,7 @@ class _SiMainScreenState extends State<SiMainScreen>
                     obraId: widget.user.user!.obraId!,
                   ),
                 ),
-                Text('Segunda pestaña'),
+                Text(''),
               ],
             ),
           ),

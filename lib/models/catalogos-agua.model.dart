@@ -126,7 +126,10 @@ class Pipas {
         numeroEconomico: json["numero_economico"],
         modelo: json["modelo"],
         tipo: json["tipo"],
-        capacidad: json["capacidad"],
+        //capacidad: json["capacidad"],
+        capacidad: json["capacidad"] != null
+            ? double.tryParse(json["capacidad"].toString())
+            : null,
         estado: json["estado"],
         inactividad: json["inactividad"],
       );
