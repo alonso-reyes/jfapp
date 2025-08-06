@@ -5,14 +5,10 @@ import 'package:jfapp/models/acarreos-metro.model.dart';
 import 'package:jfapp/models/user.model.dart';
 
 class AcarreosMetroScreen extends StatefulWidget {
-  final UserModel user;
-  final int obraId;
   final AcarreoMetro? acarreoExistente;
 
   const AcarreosMetroScreen({
     super.key,
-    required this.user,
-    required this.obraId,
     this.acarreoExistente,
   });
 

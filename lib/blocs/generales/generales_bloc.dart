@@ -13,10 +13,8 @@ class GeneralesBloc extends Bloc<GeneralesEvent, GeneralesState> {
     on<GeneralesInStartRequest>((event, emit) async {
       emit(GeneralesLoading());
       final response = await getCatalogoGenerales(event.token, event.obraId);
-      dev.log('Respuesta del Generales: $response');
       //return;
       if (response != null && response is CatalogoGeneralesModel) {
-        print("FUE CORRECTO");
         await ModelProvider.guardarCatalogoGenerales(response);
         if (response.success) {
           emit(GeneralesSuccess(catalogoGenerales: response));

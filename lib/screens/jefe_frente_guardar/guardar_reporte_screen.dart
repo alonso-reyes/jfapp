@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/api/api-helper.dart';
 import 'package:jfapp/helpers/campos-generales-validation.helper.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/helpers/turno-validation.helper.dart';
 import 'package:jfapp/helpers/zona-trabajo-validation.helper.dart';
 import 'package:jfapp/models/user.model.dart';
@@ -19,7 +20,7 @@ import 'package:jfapp/screens/jfMain_screen.dart';
 import 'dart:developer' as dev;
 
 class GuardarReporteScreen extends StatefulWidget {
-  final UserModel user;
+  final UserModel? user;
 
   const GuardarReporteScreen({
     required this.user,
@@ -31,6 +32,7 @@ class GuardarReporteScreen extends StatefulWidget {
 }
 
 class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
+  late UserModel currentUser;
   List<Map<String, String>> _images = [];
   bool _isLoading = true;
   final TextEditingController _observacionesController =
@@ -38,6 +40,7 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
 
   @override
   void initState() {
+    currentUser = widget.user ?? SessionManager.user!;
     super.initState();
   }
 
@@ -118,7 +121,7 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
       }
 
       final Map<String, dynamic> reporteData = {
-        'usuario_id': widget.user.user!.id,
+        'usuario_id': currentUser.user!.id,
         // 'generales': campoGeneralesSeleccionado!.toMap(),
         'turno': turnoSeleccionado!.toMap(),
         'zona_trabajo': zonaSeleccionada!.toMap(),
@@ -151,7 +154,7 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
       );
 
       final response = await guardarReporteJF(
-          widget.user.token, widget.user.user!.obraId!, reporteData);
+          currentUser.token, currentUser.user!.obraId, reporteData);
 
       Navigator.of(context).pop(); // Cerrar loading
 
@@ -203,7 +206,7 @@ class _GuardarReporteScreenState extends State<GuardarReporteScreen> {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => JfMainScreen(user: widget.user),
+            builder: (context) => JfMainScreen(),
           ),
         );
       }

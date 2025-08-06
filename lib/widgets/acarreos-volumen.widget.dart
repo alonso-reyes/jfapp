@@ -4,35 +4,29 @@ import 'package:jfapp/constants.dart';
 import 'dart:developer' as dev;
 import 'package:jfapp/helpers/responsive_helper.dart';
 import 'package:intl/intl.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/acarreos-volumen.model.dart';
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/providers/preference_provider.dart';
 import 'package:jfapp/screens/acarreos_volumen_screen.dart';
 
 class AcarreosVolumenWidget extends StatefulWidget {
-  final UserModel user;
-  final String token;
-  final int obraId;
-  final Responsive responsive;
+  final UserModel? user;
 
-  const AcarreosVolumenWidget({
-    super.key,
-    required this.user,
-    required this.token,
-    required this.obraId,
-    required this.responsive,
-  });
+  const AcarreosVolumenWidget({super.key, this.user});
 
   @override
   _AcarreosVolumenWidgetState createState() => _AcarreosVolumenWidgetState();
 }
 
 class _AcarreosVolumenWidgetState extends State<AcarreosVolumenWidget> {
+  late UserModel currentUser;
   List<AcarreoVolumen> acarreos = []; // Cambia a List<AcarreoVolumen>
 
   @override
   void initState() {
     super.initState();
+    currentUser = widget.user ?? SessionManager.user!;
     _cargarAcarreos();
     // dev.log('ACARREOS VOLUMEN' + acarreos.toString());
   }
@@ -64,8 +58,7 @@ class _AcarreosVolumenWidgetState extends State<AcarreosVolumenWidget> {
       context,
       MaterialPageRoute(
         builder: (context) => AcarreosVolumenScreen(
-          obraId: widget.obraId,
-          user: widget.user,
+          user: currentUser,
           acarreoExistente: acarreoExistente, // Pasa el acarreo existente
         ),
       ),
@@ -109,6 +102,7 @@ class _AcarreosVolumenWidgetState extends State<AcarreosVolumenWidget> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive responsive = Responsive(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
@@ -142,8 +136,7 @@ class _AcarreosVolumenWidgetState extends State<AcarreosVolumenWidget> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => AcarreosVolumenScreen(
-                            obraId: widget.obraId,
-                            user: widget.user,
+                            user: currentUser,
                           ),
                         ),
                       );
@@ -153,8 +146,8 @@ class _AcarreosVolumenWidgetState extends State<AcarreosVolumenWidget> {
                       }
                     },
                     child: Container(
-                      height: widget.responsive.dp(4),
-                      width: widget.responsive.hp(12),
+                      height: responsive.dp(4),
+                      width: responsive.hp(12),
                       margin: EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
                         color: customBlack,

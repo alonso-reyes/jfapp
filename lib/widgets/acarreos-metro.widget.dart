@@ -10,17 +10,8 @@ import 'package:jfapp/providers/preference_provider.dart';
 import 'package:jfapp/screens/acarreos_metro_screen.dart';
 
 class AcarreosMetroWidget extends StatefulWidget {
-  final UserModel user;
-  final String token;
-  final int obraId;
-  final Responsive responsive;
-
   const AcarreosMetroWidget({
     Key? key,
-    required this.user,
-    required this.token,
-    required this.obraId,
-    required this.responsive,
   }) : super(key: key);
 
   @override
@@ -64,8 +55,6 @@ class _AcarreosMetroWidgetState extends State<AcarreosMetroWidget> {
       context,
       MaterialPageRoute(
         builder: (context) => AcarreosMetroScreen(
-          obraId: widget.obraId,
-          user: widget.user,
           acarreoExistente: acarreoExistente, // Pasa el acarreo existente
         ),
       ),
@@ -110,6 +99,7 @@ class _AcarreosMetroWidgetState extends State<AcarreosMetroWidget> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive responsive = Responsive(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
@@ -144,10 +134,7 @@ class _AcarreosMetroWidgetState extends State<AcarreosMetroWidget> {
                       final resultado = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AcarreosMetroScreen(
-                            obraId: widget.obraId,
-                            user: widget.user,
-                          ),
+                          builder: (context) => AcarreosMetroScreen(),
                         ),
                       );
 
@@ -156,8 +143,8 @@ class _AcarreosMetroWidgetState extends State<AcarreosMetroWidget> {
                       }
                     },
                     child: Container(
-                      height: widget.responsive.dp(4),
-                      width: widget.responsive.hp(12),
+                      height: responsive.dp(4),
+                      width: responsive.hp(12),
                       margin: EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
                         color: customBlack,

@@ -9,9 +9,11 @@ import 'package:jfapp/blocs/generales/generales_event.dart';
 import 'package:jfapp/blocs/generales/generales_state.dart';
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/responsive_helper.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/campos-generales-seleccionado.model.dart';
 import 'package:jfapp/models/catalogo-generales.model.dart';
 import 'package:jfapp/models/turno-seleccionado.model.dart';
+import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/models/zona-trabajo-seleccionada.model.dart';
 import 'package:jfapp/providers/model_provider.dart';
 import 'package:jfapp/providers/preference_provider.dart';
@@ -205,17 +207,12 @@ class DrawingPainter extends CustomPainter {
 }
 
 class GeneralesWidget extends StatefulWidget {
-  final String token;
-  final int obraId;
-  final Responsive responsive;
-  final String sobrestante;
+  final UserModel? user;
 
-  const GeneralesWidget(
-      {super.key,
-      required this.token,
-      required this.obraId,
-      required this.responsive,
-      required this.sobrestante});
+  const GeneralesWidget({
+    super.key,
+    this.user,
+  });
 
   @override
   _GeneralesWidgetState createState() => _GeneralesWidgetState();
@@ -225,6 +222,8 @@ class GeneralesWidget extends StatefulWidget {
 }
 
 class _GeneralesWidgetState extends State<GeneralesWidget> {
+  late UserModel currentUser;
+
   bool _isLoading = true;
   bool _tieneConexion = false;
   final String fechaActual = DateFormat('dd/MM/yyyy').format(DateTime.now());
@@ -248,7 +247,7 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
   @override
   void initState() {
     super.initState();
-    // print('inicializa generales');
+    currentUser = widget.user ?? SessionManager.user!;
     _inicializarDatos();
   }
 
@@ -271,7 +270,7 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
       setState(() {
         catalogoGenerales = catalogoLocal;
         _isLoading = catalogoLocal == null;
-        _sobrestanteController.text = widget.sobrestante;
+        _sobrestanteController.text = currentUser.user!.nombre;
       });
       //print(catalogoLocal.toString());
 
@@ -343,8 +342,8 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
     try {
       final generalesBloc = context.read<GeneralesBloc>();
       generalesBloc.add(GeneralesInStartRequest(
-        token: widget.token,
-        obraId: widget.obraId,
+        token: currentUser.token,
+        obraId: currentUser.user!.obraId,
       ));
     } catch (e) {
       setState(() => _isLoading = false);
@@ -371,6 +370,7 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive responsive = Responsive(context);
     return MultiBlocListener(
       listeners: [
         BlocListener<GeneralesBloc, GeneralesState>(
@@ -1039,6 +1039,7 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
 
   void _showDrawingModal(BuildContext context, String imageUrl) {
     final GlobalKey<_ImageWithDrawingState> drawingKey = GlobalKey();
+    Responsive responsive = Responsive(context);
 
     showDialog(
       context: context,
@@ -1093,8 +1094,8 @@ class _GeneralesWidgetState extends State<GeneralesWidget> {
                     }
                   },
                   child: Container(
-                    height: widget.responsive.dp(5),
-                    width: widget.responsive.hp(13),
+                    height: responsive.dp(5),
+                    width: responsive.hp(13),
                     margin: EdgeInsets.symmetric(horizontal: 6),
                     decoration: BoxDecoration(
                       color: customBlack,

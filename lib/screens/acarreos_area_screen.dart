@@ -5,14 +5,10 @@ import 'package:jfapp/models/acarreos-area.model.dart';
 import 'package:jfapp/models/user.model.dart';
 
 class AcarreosAreaScreen extends StatefulWidget {
-  final UserModel user;
-  final int obraId;
   final AcarreoArea? acarreoExistente;
 
   const AcarreosAreaScreen({
     super.key,
-    required this.user,
-    required this.obraId,
     this.acarreoExistente,
   });
 

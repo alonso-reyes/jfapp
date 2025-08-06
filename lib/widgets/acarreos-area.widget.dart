@@ -4,23 +4,15 @@ import 'package:jfapp/constants.dart';
 import 'dart:developer' as dev;
 import 'package:jfapp/helpers/responsive_helper.dart';
 import 'package:intl/intl.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/acarreos-area.model.dart';
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/providers/preference_provider.dart';
 import 'package:jfapp/screens/acarreos_area_screen.dart';
 
 class AcarreosAreaWidget extends StatefulWidget {
-  final UserModel user;
-  final String token;
-  final int obraId;
-  final Responsive responsive;
-
   const AcarreosAreaWidget({
     Key? key,
-    required this.user,
-    required this.token,
-    required this.obraId,
-    required this.responsive,
   }) : super(key: key);
 
   @override
@@ -64,8 +56,6 @@ class _AcarreosAreaWidgetState extends State<AcarreosAreaWidget> {
       context,
       MaterialPageRoute(
         builder: (context) => AcarreosAreaScreen(
-          obraId: widget.obraId,
-          user: widget.user,
           acarreoExistente: acarreoExistente, // Pasa el acarreo existente
         ),
       ),
@@ -109,6 +99,7 @@ class _AcarreosAreaWidgetState extends State<AcarreosAreaWidget> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive responsive = Responsive(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
@@ -141,10 +132,7 @@ class _AcarreosAreaWidgetState extends State<AcarreosAreaWidget> {
                       final resultado = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AcarreosAreaScreen(
-                            obraId: widget.obraId,
-                            user: widget.user,
-                          ),
+                          builder: (context) => AcarreosAreaScreen(),
                         ),
                       );
 
@@ -153,8 +141,8 @@ class _AcarreosAreaWidgetState extends State<AcarreosAreaWidget> {
                       }
                     },
                     child: Container(
-                      height: widget.responsive.dp(4),
-                      width: widget.responsive.hp(12),
+                      height: responsive.dp(4),
+                      width: responsive.hp(12),
                       margin: EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
                         color: customBlack,

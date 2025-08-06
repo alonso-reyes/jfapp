@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jfapp/blocs/login/login_event.dart';
 import 'package:jfapp/blocs/login/login_state.dart';
 import 'package:jfapp/helpers/api/api-helper.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'dart:developer' as dev;
 
 import 'package:jfapp/models/user.model.dart';
@@ -13,14 +14,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginInitial()) {
     on<LoginSubmitted>((event, emit) async {
       emit(LoginLoading());
-      final Map<String, String> params;
       final response = await login(event.username, event.password);
       dev.log('Respuesta del login: $response');
       //return;
       if (response != null && response is UserModel) {
-        PreferenceProvider.user = jsonEncode(response.user);
         //print('entro aqui');
         if (response.success) {
+          await SessionManager.saveUser(response);
+          // PreferenceProvider.user = jsonEncode(response);
+          // PreferenceProvider.user = jsonEncode(response.user);
+          //dev.log("Usuario guardado: ${PreferenceProvider.user}");
           emit(LoginSuccess(user: response));
         } else {
           emit(LoginFailure(response.messages.toString()));
@@ -28,12 +31,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       } else if (response != null && response is String) {
         LoginFailure('Server error');
       }
-      //return;
-      // if (response != null && response['success']) {
-      //   emit(LoginSuccess());
-      // } else if (response != null && response['success'] == false) {
-      //   emit(LoginFailure('Credenciales incorrectas'));
-      // }
     });
 
     // on<LogoutSubmitted>((event, emit) async {

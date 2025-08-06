@@ -19,6 +19,16 @@ class ModelProvider {
     _preferences = await SharedPreferences.getInstance();
   }
 
+  static Future<void> clearCatalogos() async {
+    final todasLasClaves = _preferences.getKeys();
+    final clavesCatalogo =
+        todasLasClaves.where((clave) => clave.startsWith('catalogo'));
+
+    for (final clave in clavesCatalogo) {
+      await _preferences.remove(clave);
+    }
+  }
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ///
   ///

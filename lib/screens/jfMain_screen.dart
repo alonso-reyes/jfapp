@@ -27,6 +27,7 @@ import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/api/api-helper.dart';
 import 'package:jfapp/helpers/campos-generales-validation.helper.dart';
 import 'package:jfapp/helpers/responsive_helper.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/helpers/turno-validation.helper.dart';
 import 'package:jfapp/helpers/zona-trabajo-validation.helper.dart';
 import 'package:jfapp/models/catalogo-generales.model.dart';
@@ -58,9 +59,9 @@ import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
 
 class JfMainScreen extends StatefulWidget {
-  final UserModel user;
+  // final UserModel user;
 
-  const JfMainScreen({super.key, required this.user});
+  const JfMainScreen({super.key});
 
   @override
   _JfMainScreenState createState() => _JfMainScreenState();
@@ -68,6 +69,8 @@ class JfMainScreen extends StatefulWidget {
 
 class _JfMainScreenState extends State<JfMainScreen>
     with SingleTickerProviderStateMixin {
+  late UserModel user;
+
   bool _tieneConexion = false;
   bool _isLoading = true;
   late TabController _tabController;
@@ -92,8 +95,9 @@ class _JfMainScreenState extends State<JfMainScreen>
   @override
   void initState() {
     super.initState();
+    user = SessionManager.user!;
     _tabController = TabController(length: 6, vsync: this);
-    _inicializarCatalogos();
+    _initializeUserAndData();
   }
 
   @override
@@ -103,6 +107,29 @@ class _JfMainScreenState extends State<JfMainScreen>
     super.dispose();
   }
 
+  Future<void> _initializeUserAndData() async {
+    // Verifica y espera por el usuario si es necesario
+    if (SessionManager.user == null) {
+      await SessionManager.loadUser();
+    }
+
+    if (mounted) {
+      setState(() {
+        user = SessionManager.user!;
+      });
+    }
+
+    if (user != null) {
+      await _inicializarCatalogos();
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   /// Método principal para inicializar los catálogos
   Future<void> _inicializarCatalogos() async {
     try {
@@ -110,22 +137,17 @@ class _JfMainScreenState extends State<JfMainScreen>
         _isLoading = true;
       });
       await Future.delayed(Duration(milliseconds: 50));
-
-      dev.log('Inicializando catálogos...');
-
-      // Verificar conexión a internet
+      //dev.log('Inicializando catálogos...');
       _tieneConexion = await tieneConexionInternet();
-      dev.log('Estado de conexión: $_tieneConexion');
-
+      //dev.log('Estado de conexión: $_tieneConexion');
       if (_tieneConexion) {
         await _cargarCatalogosConInternet();
       } else {
         await _cargarCatalogosDesdePreferencias();
       }
-
-      dev.log('Catálogos inicializados correctamente');
+      //dev.log('Catálogos inicializados correctamente');
     } catch (e) {
-      dev.log('Error al inicializar catálogos: $e');
+      //dev.log('Error al inicializar catálogos: $e');
       // En caso de error, intentar cargar solo desde preferencias
       await _cargarCatalogosDesdePreferencias();
     } finally {
@@ -140,20 +162,18 @@ class _JfMainScreenState extends State<JfMainScreen>
   /// Carga catálogos cuando hay internet (desde API con fallback a preferencias)
   Future<void> _cargarCatalogosConInternet() async {
     try {
-      dev.log('Cargando catálogos desde API...');
+      //dev.log('Cargando catálogos desde API...');
 
-      // Primero cargar desde preferencias como fallback
       await _cargarCatalogosDesdePreferencias();
 
-      // Luego intentar actualizar desde API
-      dev.log('Disparando eventos de los BLoCs...');
+      //dev.log('Disparando eventos de los BLoCs...');
       await _cargarCatalogoConceptos();
       await _cargarCatalogoGenerales();
       await _cargarCatalogoMaquinaria();
       await _cargarCatalogoPersonal();
       await _cargarCatalogoMotivosInactividad();
 
-      dev.log('Eventos de BLoCs enviados correctamente');
+      //dev.log('Eventos de BLoCs enviados correctamente');
     } catch (e) {
       dev.log('Error al cargar catálogos con internet: $e');
       // Si falla, al menos tenemos los datos de preferencias
@@ -163,7 +183,7 @@ class _JfMainScreenState extends State<JfMainScreen>
   /// Carga catálogos solo desde preferencias (modo offline)
   Future<void> _cargarCatalogosDesdePreferencias() async {
     try {
-      dev.log('Cargando catálogos desde preferencias...');
+      //dev.log('Cargando catálogos desde preferencias...');
 
       final results = await Future.wait([
         ModelProvider.cargarCatalogoConcepto(),
@@ -173,42 +193,42 @@ class _JfMainScreenState extends State<JfMainScreen>
         ModelProvider.cargarCatalogoMotivosInactividad(),
       ]);
 
-      dev.log('Resultados de preferencias obtenidos');
+      //dev.log('Resultados de preferencias obtenidos');
 
       if (mounted) {
         setState(() {
           if (results[0] != null) {
             catalogoConceptos = results[0] as ConceptoModel;
-            dev.log('✓ Catálogo conceptos cargado desde preferencias');
+            // dev.log('✓ Catálogo conceptos cargado desde preferencias');
           } else {
             dev.log('✗ Catálogo conceptos no encontrado en preferencias');
           }
 
           if (results[1] != null) {
             catalogoGenerales = results[1] as CatalogoGeneralesModel;
-            dev.log('✓ Catálogo generales cargado desde preferencias');
+            // dev.log('✓ Catálogo generales cargado desde preferencias');
           } else {
             dev.log('✗ Catálogo generales no encontrado en preferencias');
           }
 
           if (results[2] != null) {
             catalogoMaquinaria = results[2] as CatalogoMaquinariaResponse;
-            dev.log('✓ Catálogo maquinaria cargado desde preferencias');
+            // dev.log('✓ Catálogo maquinaria cargado desde preferencias');
           } else {
             dev.log('✗ Catálogo maquinaria no encontrado en preferencias');
           }
 
           if (results[3] != null) {
             catalogoPersonal = results[3] as CatalogoPersonalModel;
-            dev.log('✓ Catálogo personal cargado desde preferencias');
+            // dev.log('✓ Catálogo personal cargado desde preferencias');
           } else {
             dev.log('✗ Catálogo personal no encontrado en preferencias');
           }
           if (results[4] != null) {
             catalogoMotivoInactividadMaquinaria =
                 results[4] as MotivosInactividadMaquinariaModel;
-            dev.log(
-                '✓ Catálogo motivos de inactividad cargado desde preferencias');
+            // dev.log(
+            //     '✓ Catálogo motivos de inactividad cargado desde preferencias');
           } else {
             dev.log(
                 '✗ Catálogo motivos de inactividad no encontrado en preferencias');
@@ -228,13 +248,13 @@ class _JfMainScreenState extends State<JfMainScreen>
   /// Carga catálogo de conceptos desde API
   Future<void> _cargarCatalogoConceptos() async {
     try {
-      dev.log('Enviando evento ConceptoInStartRequest...');
+      // dev.log('Enviando evento ConceptoInStartRequest...');
       final conceptoBloc = context.read<ConceptoBloc>();
       conceptoBloc.add(ConceptoInStartRequest(
-        token: widget.user.token,
-        obraId: widget.user.user!.obraId!,
+        token: user.token,
+        obraId: user.user!.obraId!,
       ));
-      dev.log('Evento ConceptoInStartRequest enviado');
+      // dev.log('Evento ConceptoInStartRequest enviado');
     } catch (e) {
       dev.log('Error al cargar catálogo conceptos desde API: $e');
     }
@@ -242,15 +262,15 @@ class _JfMainScreenState extends State<JfMainScreen>
 
   Future<void> _cargarCatalogoMotivosInactividad() async {
     try {
-      dev.log('Enviando evento MotivosInactividadInStartRequest...');
+      //dev.log('Enviando evento MotivosInactividadInStartRequest...');
       final motivosInactividadBloc =
           context.read<CatalogoMotivosInactvidadMaquinariaBloc>();
       motivosInactividadBloc
           .add(CatalogoMotivosInactvidadMaquinariaInStartRequest(
-        token: widget.user.token,
-        obraId: widget.user.user!.obraId!,
+        token: user.token,
+        obraId: user.user!.obraId!,
       ));
-      dev.log('Evento MotivosInactividadInStartRequest enviado');
+      //dev.log('Evento MotivosInactividadInStartRequest enviado');
     } catch (e) {
       dev.log('Error al cargar catálogo conceptos desde API: $e');
     }
@@ -259,13 +279,13 @@ class _JfMainScreenState extends State<JfMainScreen>
   /// Carga catálogo generales desde API
   Future<void> _cargarCatalogoGenerales() async {
     try {
-      dev.log('Enviando evento GeneralesInStartRequest...');
+      //dev.log('Enviando evento GeneralesInStartRequest...');
       final generalesBloc = context.read<GeneralesBloc>();
       generalesBloc.add(GeneralesInStartRequest(
-        token: widget.user.token,
-        obraId: widget.user.user!.obraId!,
+        token: user.token,
+        obraId: user.user!.obraId!,
       ));
-      dev.log('Evento GeneralesInStartRequest enviado');
+      //dev.log('Evento GeneralesInStartRequest enviado');
     } catch (e) {
       dev.log('Error al cargar catálogo generales desde API: $e');
     }
@@ -274,13 +294,13 @@ class _JfMainScreenState extends State<JfMainScreen>
   /// Carga catálogo maquinaria desde API
   Future<void> _cargarCatalogoMaquinaria() async {
     try {
-      dev.log('Enviando evento FamiliaMaquinariaInStartRequest...');
+      //dev.log('Enviando evento FamiliaMaquinariaInStartRequest...');
       final maquinariaBloc = context.read<FamiliaMaquinariaBloc>();
       maquinariaBloc.add(FamiliaMaquinariaInStartRequest(
-        token: widget.user.token,
-        obraId: widget.user.user!.obraId!,
+        token: user.token,
+        obraId: user.user!.obraId!,
       ));
-      dev.log('Evento FamiliaMaquinariaInStartRequest enviado');
+      // dev.log('Evento FamiliaMaquinariaInStartRequest enviado');
     } catch (e) {
       dev.log('Error al cargar catálogo maquinaria desde API: $e');
     }
@@ -289,13 +309,13 @@ class _JfMainScreenState extends State<JfMainScreen>
   /// Carga catálogo personal desde API
   Future<void> _cargarCatalogoPersonal() async {
     try {
-      dev.log('Enviando evento CatalogoPersonalInStartRequest...');
+      //dev.log('Enviando evento CatalogoPersonalInStartRequest...');
       final personalBloc = context.read<CatalogoPersonalBloc>();
       personalBloc.add(CatalogoPersonalInStartRequest(
-        token: widget.user.token,
-        obraId: widget.user.user!.obraId!,
+        token: user.token,
+        obraId: user.user!.obraId!,
       ));
-      dev.log('Evento CatalogoPersonalInStartRequest enviado');
+      //dev.log('Evento CatalogoPersonalInStartRequest enviado');
     } catch (e) {
       dev.log('Error al cargar catálogo personal desde API: $e');
     }
@@ -330,156 +350,6 @@ class _JfMainScreenState extends State<JfMainScreen>
     await _inicializarCatalogos();
   }
 
-  Future<void> guardarDatos() async {
-    _tieneConexion = await tieneConexionInternet();
-    if (!_tieneConexion) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: Sin conexión a internet'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    try {
-      final campoGeneralesSeleccionado =
-          PreferenceProvider.getCampoSeleccionado();
-      final turnoSeleccionado = PreferenceProvider.getTurnoSeleccionado();
-      final zonaSeleccionada = PreferenceProvider.getZonaTrabajoSeleccionada();
-      final acarreosVolumen =
-          PreferenceProvider.getAcarreos('acarreos_volumen');
-      final acarreosArea = PreferenceProvider.getAcarreosArea('acarreos_area');
-      final acarreosMetroLineal =
-          PreferenceProvider.getAcarreosMetro('acarreos_metro');
-      final acarreosAgua = PreferenceProvider.getAcarreosAgua('acarreos_agua');
-      final maquinaria = MaquinariaProvider.getMaquinaria('maquinaria');
-      final personal = PersonalProvider.getPersonal('personal');
-      final fotografias = PhotoProvider.getImagesWithDescriptions('images');
-
-      //print(personal);
-      //return;
-      // Validaciones
-      if (!CamposGeneralesValidationHelper.areCamposGeneralesComplete(
-          campoGeneralesSeleccionado)) {
-        final errorMessage =
-            CamposGeneralesValidationHelper.getIncompleteCamposMessage(
-                campoGeneralesSeleccionado);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage!)),
-        );
-        return;
-      }
-
-      if (!TurnoValidationHelper.isTurnoComplete(turnoSeleccionado)) {
-        final errorMessage =
-            TurnoValidationHelper.getIncompleteTurnoMessage(turnoSeleccionado);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage!)),
-        );
-        return;
-      }
-
-      if (!ZonaTrabajoValidationHelper.isZonaComplete(zonaSeleccionada)) {
-        final errorMessage =
-            ZonaTrabajoValidationHelper.getIncompleteZonaMessage(
-                zonaSeleccionada);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage!)),
-        );
-        return;
-      }
-
-      final Map<String, dynamic> reporteData = {
-        'usuario_id': widget.user.user!.id,
-        'generales': campoGeneralesSeleccionado!.toMap(),
-        'turno': turnoSeleccionado!.toMap(),
-        'zona_trabajo': zonaSeleccionada!.toMap(),
-        // 'observaciones': _observacionesController.text,
-        'acarreos_volumen':
-            acarreosVolumen.map((acarreo) => acarreo.toMap()).toList(),
-        'acarreos_area':
-            acarreosArea.map((acarreo) => acarreo.toMap()).toList(),
-        'acarreos_metro_lineal':
-            acarreosMetroLineal.map((acarreo) => acarreo.toMap()).toList(),
-        'acarreos_agua':
-            acarreosAgua.map((acarreo) => acarreo.toMap()).toList(),
-        'maquinaria': maquinaria.map((maquina) => maquina.toJson()).toList(),
-        'personal': personal.map((persona) => persona.toJson()).toList(),
-        'fotografias': fotografias,
-      };
-
-      // Mostrar loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.black45),
-          );
-        },
-      );
-
-      final response = await guardarReporteJF(
-          widget.user.token, widget.user.user!.obraId!, reporteData);
-
-      Navigator.of(context).pop(); // Cerrar loading
-
-      if (response['success'] == true) {
-        await _limpiarPreferencias();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reporte guardado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Error al guardar el reporte'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      // Cerrar loading si está abierto
-      if (Navigator.canPop(context)) {
-        Navigator.of(context).pop();
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error inesperado: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-
-      dev.log('Error al guardar datos: ${e.toString()}');
-    }
-  }
-
-  Future<void> _limpiarPreferencias() async {
-    PreferenceProvider.clearTurnoSeleccionado();
-    PreferenceProvider.clearZonaTrabajoSeleccionada();
-    PreferenceProvider.clearAcarreosVolumen();
-    PreferenceProvider.clearAcarreosArea();
-    PreferenceProvider.clearAcarreosMetro();
-    PreferenceProvider.clearAcarreosAgua();
-    MaquinariaProvider.clearMaquinaria();
-    PersonalProvider.clearPersonal();
-    PhotoProvider.clearImages('images');
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => JfMainScreen(user: widget.user),
-          ),
-        );
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     Responsive responsive = Responsive(context);
@@ -488,6 +358,11 @@ class _JfMainScreenState extends State<JfMainScreen>
       listeners: [
         BlocListener<LogoutBloc, LogoutState>(listener: (context, state) {
           if (state is LogoutSuccess) {
+            PreferenceProvider.clearPreferences();
+            ModelProvider.clearCatalogos();
+            MaquinariaProvider.clearMaquinaria();
+            PersonalProvider.clearPersonal();
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -507,9 +382,9 @@ class _JfMainScreenState extends State<JfMainScreen>
             setState(() {
               catalogoGenerales = state.catalogoGenerales;
             });
-            dev.log('Catálogo generales actualizado desde API');
+            //dev.log('Catálogo generales actualizado desde API');
           } else if (state is GeneralesFailure) {
-            dev.log('Error al cargar catálogo generales: ${state.toString()}');
+            //dev.log('Error al cargar catálogo generales: ${state.toString()}');
           }
         }),
         BlocListener<FamiliaMaquinariaBloc, FamiliaMaquinariaState>(
@@ -518,9 +393,9 @@ class _JfMainScreenState extends State<JfMainScreen>
             setState(() {
               catalogoMaquinaria = state.catalogoMaquinaria;
             });
-            dev.log('Catálogo maquinaria actualizado desde API');
+            //dev.log('Catálogo maquinaria actualizado desde API');
           } else if (state is FamiliaMaquinariaFailure) {
-            dev.log('Error al cargar catálogo maquinaria: ${state.toString()}');
+            //dev.log('Error al cargar catálogo maquinaria: ${state.toString()}');
           }
         }),
         BlocListener<ConceptoBloc, ConceptoState>(listener: (context, state) {
@@ -528,9 +403,9 @@ class _JfMainScreenState extends State<JfMainScreen>
             setState(() {
               catalogoConceptos = state.concepto;
             });
-            dev.log('Catálogo conceptos actualizado desde API');
+            //dev.log('Catálogo conceptos actualizado desde API');
           } else if (state is ConceptoFailure) {
-            dev.log('Error al cargar catálogo conceptos: ${state.toString()}');
+            //dev.log('Error al cargar catálogo conceptos: ${state.toString()}');
           }
         }),
         BlocListener<CatalogoPersonalBloc, CatalogoPersonalState>(
@@ -539,9 +414,9 @@ class _JfMainScreenState extends State<JfMainScreen>
             setState(() {
               catalogoPersonal = state.personal;
             });
-            dev.log('Catálogo personal actualizado desde API');
+            //dev.log('Catálogo personal actualizado desde API');
           } else if (state is CatalogoPersonalFailure) {
-            dev.log('Error al cargar catálogo personal: ${state.toString()}');
+            //dev.log('Error al cargar catálogo personal: ${state.toString()}');
           }
         }),
         BlocListener<CatalogoMotivosInactvidadMaquinariaBloc,
@@ -551,9 +426,9 @@ class _JfMainScreenState extends State<JfMainScreen>
             setState(() {
               catalogoMotivoInactividadMaquinaria = state.motivoInactividad;
             });
-            dev.log('Catálogo conceptos actualizado desde API');
+            //dev.log('Catálogo conceptos actualizado desde API');
           } else if (state is ConceptoFailure) {
-            dev.log('Error al cargar catálogo conceptos: ${state.toString()}');
+            //dev.log('Error al cargar catálogo conceptos: ${state.toString()}');
           }
         }),
       ],
@@ -562,7 +437,7 @@ class _JfMainScreenState extends State<JfMainScreen>
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text(
-            widget.user.user!.name,
+            user.user!.nombre!,
             style: const TextStyle(color: Colors.white),
           ),
           backgroundColor: customBlack,
@@ -609,7 +484,7 @@ class _JfMainScreenState extends State<JfMainScreen>
             ],
           ),
         ),
-        drawer: UserDrawer(user: widget.user),
+        drawer: UserDrawer(user: user),
         body: _isLoading
             ? const Center(
                 child: Column(
@@ -632,10 +507,7 @@ class _JfMainScreenState extends State<JfMainScreen>
                       child: Column(
                         children: [
                           GeneralesWidget(
-                            sobrestante: widget.user.user!.name,
-                            token: widget.user.token,
-                            obraId: widget.user.user!.obraId!,
-                            responsive: responsive,
+                            user: user,
                           ),
                         ],
                       ),
@@ -661,28 +533,12 @@ class _JfMainScreenState extends State<JfMainScreen>
                             ],
                           ),
                           AcarreosVolumenWidget(
-                            user: widget.user,
-                            token: widget.user.token,
-                            obraId: widget.user.user!.obraId!,
-                            responsive: responsive,
+                            user: user,
                           ),
-                          AcarreosAreaWidget(
-                            user: widget.user,
-                            token: widget.user.token,
-                            obraId: widget.user.user!.obraId!,
-                            responsive: responsive,
-                          ),
-                          AcarreosMetroWidget(
-                            user: widget.user,
-                            token: widget.user.token,
-                            obraId: widget.user.user!.obraId!,
-                            responsive: responsive,
-                          ),
+                          AcarreosAreaWidget(),
+                          AcarreosMetroWidget(),
                           AcarreosAguaWidget(
-                            user: widget.user,
-                            token: widget.user.token,
-                            obraId: widget.user.user!.obraId!,
-                            responsive: responsive,
+                            user: user,
                           ),
                         ],
                       ),
@@ -695,10 +551,7 @@ class _JfMainScreenState extends State<JfMainScreen>
                       child: Column(
                         children: [
                           MaquinariaWidget(
-                            user: widget.user,
-                            token: widget.user.token,
-                            obraId: widget.user.user!.obraId!,
-                            responsive: responsive,
+                            user: user,
                           ),
                         ],
                       ),
@@ -708,8 +561,7 @@ class _JfMainScreenState extends State<JfMainScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: PersonalWidget(
-                      user: widget.user,
-                      obraId: widget.user.user!.obraId!,
+                      user: user,
                     ),
                   ),
                   Container(
@@ -723,7 +575,7 @@ class _JfMainScreenState extends State<JfMainScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: GuardarReporteScreen(
-                      user: widget.user,
+                      user: user,
                     ),
                   ),
                 ],

@@ -12,6 +12,7 @@ import 'package:jfapp/blocs/reporte_diario_whatsapp/reporte_diario_wa_event.dart
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/connectivity_helper.dart';
 import 'package:jfapp/helpers/responsive_helper.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/reporte-diario-wa.model.dart';
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/providers/model_provider.dart';
@@ -23,9 +24,7 @@ import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
 
 class SiMainScreen extends StatefulWidget {
-  final UserModel user;
-
-  const SiMainScreen({super.key, required this.user});
+  const SiMainScreen({super.key});
 
   @override
   _SiMainScreenState createState() => _SiMainScreenState();
@@ -33,6 +32,7 @@ class SiMainScreen extends StatefulWidget {
 
 class _SiMainScreenState extends State<SiMainScreen>
     with SingleTickerProviderStateMixin {
+  late UserModel user;
   bool _tieneConexion = false;
   late TabController _tabController;
   late Future<void> _initFuture;
@@ -40,6 +40,7 @@ class _SiMainScreenState extends State<SiMainScreen>
   @override
   void initState() {
     super.initState();
+    user = SessionManager.user!;
     _tabController = TabController(length: 2, vsync: this);
     _initFuture = _inicializarCatalogos();
   }
@@ -59,8 +60,8 @@ class _SiMainScreenState extends State<SiMainScreen>
     dev.log('Cargando catalogos de superintendente.....');
     if (_tieneConexion) {
       dev.log('Hay internet, despachando evento para consultar API');
-      final token = widget.user.token;
-      final obraId = widget.user.user!.obraId;
+      final token = user.token;
+      final obraId = user.user!.obraId;
       context.read<ReporteDiarioWaBloc>().add(
             ReporteDiarioWaInStartRequest(token: token, obraId: obraId!),
           );
@@ -110,7 +111,7 @@ class _SiMainScreenState extends State<SiMainScreen>
             appBar: AppBar(
               iconTheme: IconThemeData(color: Colors.white),
               title: Text(
-                widget.user.user!.name,
+                user.user!.nombre!,
                 style: TextStyle(color: Colors.white),
               ),
               backgroundColor: customBlack,
@@ -128,7 +129,7 @@ class _SiMainScreenState extends State<SiMainScreen>
                 ],
               ),
             ),
-            drawer: UserDrawer(user: widget.user),
+            drawer: UserDrawer(user: user),
             body: TabBarView(
               physics: NeverScrollableScrollPhysics(),
               controller: _tabController,
@@ -137,8 +138,8 @@ class _SiMainScreenState extends State<SiMainScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ReporteDiarioWaScreen(
-                    user: widget.user,
-                    obraId: widget.user.user!.obraId!,
+                    user: user,
+                    obraId: user.user!.obraId!,
                   ),
                 ),
                 Text(''),

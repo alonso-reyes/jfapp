@@ -23,14 +23,12 @@ import 'dart:developer' as dev;
 
 class AgregarMaquinariaScreen extends StatefulWidget {
   final UserModel user;
-  final int obraId;
   final GuardarCatalogoMaquinariaModel? maquinaEditar;
   final List<GuardarCatalogoMaquinariaModel>? maquinasCargadas;
 
   const AgregarMaquinariaScreen(
       {super.key,
       required this.user,
-      required this.obraId,
       this.maquinaEditar,
       this.maquinasCargadas});
 

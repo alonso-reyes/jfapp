@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jfapp/blocs/personal/personal_bloc.dart';
 import 'package:jfapp/blocs/personal/personal_event.dart';
 import 'package:jfapp/constants.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/catalogo-personal.model.dart';
 import 'package:jfapp/models/guardar-catalogo-personal.model.dart';
 import 'package:jfapp/models/user.model.dart';
@@ -11,13 +12,11 @@ import 'package:jfapp/providers/model_provider.dart';
 import 'package:jfapp/providers/personal_provider.dart';
 
 class PersonalWidget extends StatefulWidget {
-  final UserModel user;
-  final int obraId;
+  final UserModel? user;
 
   const PersonalWidget({
     super.key,
-    required this.user,
-    required this.obraId,
+    this.user,
   });
 
   @override
@@ -25,6 +24,7 @@ class PersonalWidget extends StatefulWidget {
 }
 
 class _PersonalWidgetState extends State<PersonalWidget> {
+  late UserModel currentUser;
   List<GuardarCatalogoPersonalModel> _personalSeleccionado = [];
   CatalogoPersonalModel? _catalogoPersonal;
   bool _tieneConexion = false;
@@ -36,8 +36,9 @@ class _PersonalWidgetState extends State<PersonalWidget> {
 
   @override
   void initState() {
-    print(widget.user.token);
+    // print(widget.user.token);
     super.initState();
+    currentUser = widget.user ?? SessionManager.user!;
     _searchController.addListener(_filtrarPersonal);
     _cargarDatosIniciales();
     _verificarConexion();
@@ -104,8 +105,8 @@ class _PersonalWidgetState extends State<PersonalWidget> {
     try {
       final personalBloc = context.read<CatalogoPersonalBloc>();
       personalBloc.add(CatalogoPersonalInStartRequest(
-        token: widget.user.token,
-        obraId: widget.obraId,
+        token: currentUser.token,
+        obraId: currentUser.user!.obraId,
       ));
     } catch (e) {
       setState(() => _isLoading = false);

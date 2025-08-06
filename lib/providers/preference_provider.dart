@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:jfapp/models/acarreos-agua.model.dart';
 import 'package:jfapp/models/acarreos-area.model.dart';
 import 'package:jfapp/models/acarreos-metro.model.dart';
 import 'package:jfapp/models/acarreos-volumen.model.dart';
 import 'package:jfapp/models/campos-generales-seleccionado.model.dart';
 import 'package:jfapp/models/turno-seleccionado.model.dart';
+import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/models/zona-trabajo-seleccionada.model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dart:developer' as dev;
 
 class PreferenceProvider {
   static late SharedPreferences _preferences;
@@ -13,6 +18,25 @@ class PreferenceProvider {
   /// Inicializa las preferencias compartidas
   static Future<void> init() async {
     _preferences = await SharedPreferences.getInstance();
+  }
+
+  static Future<void> saveUserModel(UserModel user) async {
+    final userJson = jsonEncode(user.toJson());
+    await _preferences.setString('current_user', userJson);
+    dev.log('Usuario guardado completo: $userJson');
+  }
+
+  static UserModel? get getUserModel {
+    final userJson = _preferences.getString('current_user');
+    if (userJson != null && userJson.isNotEmpty) {
+      try {
+        return UserModel.fromJson(jsonDecode(userJson));
+      } catch (e) {
+        dev.log('Error al decodificar usuario: $e');
+        return null;
+      }
+    }
+    return null;
   }
 
   /// Guarda el token de autenticación

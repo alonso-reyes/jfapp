@@ -6,19 +6,18 @@ import 'package:jfapp/blocs/catalogos_acarreos_agua/catalogos_acarreos_agua_stat
 import 'package:jfapp/components/custom_save_button.dart';
 import 'package:jfapp/constants.dart';
 import 'package:jfapp/helpers/responsive_helper.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/acarreos-agua.model.dart';
 import 'package:jfapp/models/catalogos-agua.model.dart';
 import 'package:jfapp/models/user.model.dart';
 
 class AcarreosAguaScreen extends StatefulWidget {
   final UserModel user;
-  final int obraId;
   final AcarreoAgua? acarreoExistente;
 
   const AcarreosAguaScreen({
     super.key,
     required this.user,
-    required this.obraId,
     this.acarreoExistente,
   });
 
@@ -27,6 +26,7 @@ class AcarreosAguaScreen extends StatefulWidget {
 }
 
 class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
+  late UserModel currentUser;
   final TextEditingController _viajesController = TextEditingController();
   final TextEditingController _capacidadController = TextEditingController();
   final TextEditingController _volumenController = TextEditingController();
@@ -70,6 +70,7 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
   @override
   void initState() {
     super.initState();
+    currentUser = widget.user ?? SessionManager.user!;
     if (widget.acarreoExistente != null) {
       _viajesController.text = widget.acarreoExistente!.viajes.toString();
       _capacidadController.text = widget.acarreoExistente!.capacidad.toString();
@@ -102,9 +103,12 @@ class _AcarreosAguaScreenState extends State<AcarreosAguaScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<CatalogosAcarreosAguaBloc>(
-            create: (context) => CatalogosAcarreosAguaBloc()
-              ..add(CatalogosAcarreosAguaInStartRequest(
-                  obraId: widget.obraId, token: widget.user.token))),
+          create: (context) => CatalogosAcarreosAguaBloc()
+            ..add(CatalogosAcarreosAguaInStartRequest(
+              obraId: currentUser.user!.obraId!,
+              token: currentUser.token,
+            )),
+        ),
       ],
       child: Scaffold(
         backgroundColor: mainBgColor,

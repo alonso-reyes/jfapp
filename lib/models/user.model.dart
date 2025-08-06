@@ -54,16 +54,16 @@ class UserModel {
 }
 
 class User {
-  int? id;
-  String? tipoUsuario;
-  String name;
-  String? email;
-  int? obraId;
+  final int id;
+  final String tipoUsuario;
+  final String nombre;
+  final String? email;
+  final int obraId;
 
   User({
     required this.id,
     required this.tipoUsuario,
-    required this.name,
+    required this.nombre,
     this.email,
     required this.obraId,
   });
@@ -71,7 +71,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => User(
         id: json["id"] ?? 0,
         tipoUsuario: json["tipo_usuario"] ?? '',
-        name: json["nombre"] ?? '',
+        nombre: json["nombre"] ?? '',
         email: json["email"] ?? '',
         obraId: json["obra_id"] ?? 0,
       );
@@ -79,8 +79,8 @@ class User {
   Map<String, dynamic> toJson() => {
         "id": id,
         "tipo_usuario": tipoUsuario,
-        "name": name,
+        "nombre": nombre,
         "email": email,
-        "obraId": obraId,
+        "obra_id": obraId,
       };
 }

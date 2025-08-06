@@ -31,18 +31,12 @@ class _LoginScreenState extends State<LoginScreen> {
           tipoUsuario == 'JEFE DE FRENTE'
               ? Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => JfMainScreen(
-                            user: state.user,
-                          )),
+                  MaterialPageRoute(builder: (context) => JfMainScreen()),
                   (route) => false,
                 )
               : Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => SiMainScreen(
-                            user: state.user,
-                          )),
+                  MaterialPageRoute(builder: (context) => SiMainScreen()),
                   (route) => false,
                 );
           // Navegar a otra pantalla o realizar otra acción

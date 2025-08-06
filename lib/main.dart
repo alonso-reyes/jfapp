@@ -14,6 +14,7 @@ import 'package:jfapp/blocs/personal/personal_bloc.dart';
 import 'package:jfapp/blocs/reporte_diario_whatsapp/reporte_diario_wa_bloc.dart';
 import 'package:jfapp/blocs/turno/turno_bloc.dart';
 import 'package:jfapp/blocs/zonas-trabajo/zonas_trabajo_bloc.dart';
+import 'package:jfapp/helpers/session_manager.dart';
 import 'package:jfapp/models/user.model.dart';
 import 'package:jfapp/providers/maquinaria_provider.dart';
 import 'package:jfapp/providers/model_provider.dart';
@@ -33,6 +34,7 @@ void main() async {
   await MaquinariaProvider.init();
   await PersonalProvider.init();
   await PhotoProvider.init();
+  await SessionManager.loadUser();
   await dotenv.load(fileName: ".env");
 
   runApp(
@@ -64,11 +66,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final userModel = SessionManager.user;
     // Crear un usuario de prueba
     User testUser = User(
         id: 1,
         tipoUsuario: 'JEFE DE FRENTE',
-        name: "Andres reyes",
+        nombre: "Andres reyes",
         email: "johndoe@example.com",
         obraId: 1);
 
@@ -94,7 +97,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: LoginScreen(),
+      home: _getInitialScreen(userModel),
     );
+  }
+
+  Widget _getInitialScreen(UserModel? userModel) {
+    if (userModel != null && userModel.user != null) {
+      final tipoUsuario = userModel.user!.tipoUsuario;
+      if (tipoUsuario == 'JEFE DE FRENTE') {
+        return JfMainScreen();
+      } else {
+        return JfMainScreen();
+      }
+    } else {
+      return LoginScreen();
+    }
   }
 }

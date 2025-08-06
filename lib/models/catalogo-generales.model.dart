@@ -107,6 +107,14 @@ class Turno {
     required this.horaSalida,
   });
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Turno && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
   factory Turno.fromJson(Map<String, dynamic> json) => Turno(
         id: json["id"],
         turno: json["turno"],

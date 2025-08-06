@@ -11,13 +11,11 @@ import 'package:jfapp/models/user.model.dart';
 
 class AcarreosVolumenScreen extends StatefulWidget {
   final UserModel user;
-  final int obraId;
   final AcarreoVolumen? acarreoExistente;
 
   const AcarreosVolumenScreen({
     super.key,
     required this.user,
-    required this.obraId,
     this.acarreoExistente,
   });
 
@@ -126,7 +124,8 @@ class _AcarreosVolumenScreenState extends State<AcarreosVolumenScreen> {
         BlocProvider<CatalogosAcarreosVolumenBloc>(
             create: (context) => CatalogosAcarreosVolumenBloc()
               ..add(CatalogosAcarreosVolumenInStartRequest(
-                  obraId: widget.obraId, token: widget.user.token))),
+                  obraId: widget.user.user!.obraId!,
+                  token: widget.user.token))),
       ],
       child: Scaffold(
         backgroundColor: mainBgColor,
